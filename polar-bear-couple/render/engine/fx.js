@@ -5,11 +5,28 @@
 const SAFE = { left: 50, right: W - 150, top: 470, bottom: 1480 };
 const ACCENT = { him: '#4C8DFF', her: '#FF5FA2' };
 
+// Text / bubble styling; useCuteLook() switches to the softer look of the newer skits.
+const UI = {
+  stroke: '#111', bubbleBorder: '#1d1f26', bubbleText: '#15171c', bubbleWeight: 700,
+  bubbleBorderBy: null, narrColor: '#FFE45C', hookSize: 64, hookWeight: 800, softShadow: 'rgba(0,0,0,0.35)',
+};
+function useCuteLook() {
+  useCuteStyle();
+  FONT = '"Fredoka", "Noto Color Emoji", sans-serif';
+  Object.assign(UI, {
+    stroke: '#4A2E4F', bubbleBorder: '#5B4A60', bubbleText: '#3A2B3F', bubbleWeight: 600,
+    bubbleBorderBy: { him: '#7FA8F5', her: '#FF8FBA' }, narrColor: '#FFE7A3', hookSize: 66, hookWeight: 700,
+    softShadow: 'rgba(74,46,79,0.35)',
+  });
+  ACCENT.him = '#6F9CF2';
+  ACCENT.her = '#FF7FB0';
+}
+
 // Persistent hook caption at the top (visible from frame 0 so it works as the thumbnail).
 function hookText(ctx, text) {
   drawText(ctx, text, W / 2, 320, {
-    size: 64, weight: 800, maxWidth: 930, color: '#fff', stroke: '#111', strokeWidth: 10,
-    shadow: 'rgba(0,0,0,0.35)', shadowBlur: 12, lineHeight: 1.15,
+    size: UI.hookSize, weight: UI.hookWeight, maxWidth: 930, color: '#fff', stroke: UI.stroke, strokeWidth: 11,
+    shadow: UI.softShadow, shadowBlur: 14, lineHeight: 1.12,
   });
 }
 
@@ -21,7 +38,7 @@ function popScale(t, t0, t1, out = 0.14) {
 
 function speechBubble(ctx, text, cx, cy, tail, t, t0, t1, o = {}) {
   const size = o.size || 50;
-  const { lines, w } = measureLines(ctx, text, size, 700, o.maxWidth || 640);
+  const { lines, w } = measureLines(ctx, text, size, UI.bubbleWeight, o.maxWidth || 640);
   const lh = size * 1.18;
   const bw = w + 56, bh = lines.length * lh + 34;
   cx = clamp(cx, SAFE.left + bw / 2, SAFE.right - bw / 2);
@@ -34,7 +51,7 @@ function speechBubble(ctx, text, cx, cy, tail, t, t0, t1, o = {}) {
   ctx.translate(ox, cy);
   ctx.scale(s, s);
   ctx.translate(-ox, -cy);
-  const border = o.border || '#1d1f26';
+  const border = o.border || UI.bubbleBorder;
   const fill = o.fill || '#fff';
   ctx.shadowColor = 'rgba(0,0,0,0.25)';
   ctx.shadowBlur = 18;
@@ -67,17 +84,17 @@ function speechBubble(ctx, text, cx, cy, tail, t, t0, t1, o = {}) {
   ctx.roundRect(cx - bw / 2 + 3, cy - bh / 2 + 3, bw - 6, bh - 6, 31);
   ctx.fillStyle = fill;
   ctx.fill();
-  ctx.font = font(size, 700);
+  ctx.font = font(size, UI.bubbleWeight);
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillStyle = o.color || '#15171c';
+  ctx.fillStyle = o.color || UI.bubbleText;
   lines.forEach((ln, i) => ctx.fillText(ln, cx, cy - ((lines.length - 1) * lh) / 2 + i * lh + 2));
   ctx.restore();
 }
 
 function thoughtBubble(ctx, text, cx, cy, from, t, t0, t1, o = {}) {
   const size = o.size || 48;
-  const { lines, w } = measureLines(ctx, text, size, 700, o.maxWidth || 600);
+  const { lines, w } = measureLines(ctx, text, size, UI.bubbleWeight, o.maxWidth || 600);
   const lh = size * 1.18;
   const bw = w + 90, bh = lines.length * lh + 70;
   cx = clamp(cx, SAFE.left + bw / 2, SAFE.right - bw / 2);
@@ -93,7 +110,7 @@ function thoughtBubble(ctx, text, cx, cy, from, t, t0, t1, o = {}) {
       const px = lerp(from[0], cx, 1 - k), py = lerp(from[1], cy + bh / 2, 1 - k);
       const show = seg(t, t0 + i * 0.06, t0 + i * 0.06 + 0.12);
       ellipse(ctx, px, py, (10 + i * 6) * show, (9 + i * 5) * show);
-      fillStroke(ctx, '#fff', '#1d1f26', 5);
+      fillStroke(ctx, '#fff', UI.bubbleBorder, 5);
     }
   }
   ctx.translate(cx, cy);
@@ -105,16 +122,16 @@ function thoughtBubble(ctx, text, cx, cy, from, t, t0, t1, o = {}) {
   for (let j = 1; j < ny + 1; j++) { bumps.push([-bw / 2, -bh / 2 + (j / (ny + 1)) * bh]); bumps.push([bw / 2, -bh / 2 + (j / (ny + 1)) * bh]); }
   const r = Math.min(70, Math.max(46, bh * 0.42));
   ctx.lineWidth = 11;
-  ctx.strokeStyle = '#1d1f26';
+  ctx.strokeStyle = UI.bubbleBorder;
   for (const [x, y] of bumps) { ellipse(ctx, x * 0.92, y * 0.8, r, r * 0.85); ctx.stroke(); }
   rrect(ctx, -bw / 2, -bh / 2, bw, bh, 40); ctx.stroke();
   ctx.fillStyle = '#fff';
   for (const [x, y] of bumps) { ellipse(ctx, x * 0.92, y * 0.8, r, r * 0.85); ctx.fill(); }
   rrect(ctx, -bw / 2, -bh / 2, bw, bh, 40); ctx.fill();
-  ctx.font = font(size, 700);
+  ctx.font = font(size, UI.bubbleWeight);
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillStyle = '#15171c';
+  ctx.fillStyle = UI.bubbleText;
   lines.forEach((ln, i) => ctx.fillText(ln, 0, -((lines.length - 1) * lh) / 2 + i * lh + 2));
   ctx.restore();
 }
@@ -128,7 +145,8 @@ function drawLines(ctx, skit, t, anchors, cam = CAM0) {
     const mouth = b ? worldToScreen(cam, bearMouth(b)) : null;
     if (l.kind === 'say') {
       const pos = l.o.at || [top[0], top[1] - 70];
-      speechBubble(ctx, l.text, pos[0], pos[1], l.o.noTail ? null : mouth, t, l.t, t1, l.o);
+      const bo = UI.bubbleBorderBy && !l.o.border ? { ...l.o, border: UI.bubbleBorderBy[l.who] } : l.o;
+      speechBubble(ctx, l.text, pos[0], pos[1], l.o.noTail ? null : mouth, t, l.t, t1, bo);
     } else {
       const pos = l.o.at || [top[0] + 60, top[1] - 120];
       thoughtBubble(ctx, l.text, pos[0], pos[1], l.o.noTail ? null : [top[0], top[1] + 10], t, l.t, t1, l.o);
@@ -189,7 +207,7 @@ function narration(ctx, text, x, y, t, t0, t1, o = {}) {
   ctx.translate(x, y);
   ctx.scale(s, s);
   drawText(ctx, text, 0, 0, {
-    size: o.size || 52, weight: 900, color: o.color || '#FFE45C', stroke: '#111', strokeWidth: 11,
+    size: o.size || 52, weight: 900, color: o.color || UI.narrColor, stroke: UI.stroke, strokeWidth: 11,
     maxWidth: o.maxWidth || 860, shadow: 'rgba(0,0,0,0.3)',
   });
   ctx.restore();
@@ -206,7 +224,7 @@ function bigText(ctx, text, x, y, t, t0, t1, o = {}) {
   ctx.rotate(o.rot || 0);
   ctx.scale(lerp(1.8, 1, k), lerp(1.8, 1, k));
   drawText(ctx, text, 0, 0, {
-    size: o.size || 92, weight: 900, color: o.color || '#fff', stroke: '#111', strokeWidth: 16,
+    size: o.size || 92, weight: 900, color: o.color || '#fff', stroke: UI.stroke, strokeWidth: 16,
     maxWidth: o.maxWidth || 900, shadow: 'rgba(0,0,0,0.4)', shadowBlur: 20,
   });
   ctx.restore();

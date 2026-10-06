@@ -142,7 +142,7 @@ function heartPath(ctx, x, y, s) {
 }
 
 // ---------- text ----------
-const FONT = 'Inter, "Noto Color Emoji", sans-serif';
+let FONT = 'Inter, "Noto Color Emoji", sans-serif';
 function font(size, weight = 800) { return `${weight} ${size}px ${FONT}`; }
 
 function wrapText(ctx, text, maxWidth) {
@@ -307,6 +307,7 @@ class Skit {
       duration: this.duration,
       sfx: this.sfxList,
       music: this.musicList,
+      mix: this.def.mix || null,
     };
   }
 

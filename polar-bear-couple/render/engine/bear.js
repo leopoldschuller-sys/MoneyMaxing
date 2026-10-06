@@ -21,7 +21,20 @@ const PAL = {
   tear: '#86CCFF',
   sweat: '#9BD5FF',
 };
-const LW = 6.5;
+let LW = 6.5;
+
+// "Cute" look (used by the newer skits): bigger head, smaller body, bigger sparkly eyes set
+// lower on the face, softer warm outlines and pastel shading. Old skits keep the classic look.
+let CUTE = false;
+function useCuteStyle() {
+  CUTE = true;
+  LW = 5.5;
+  Object.assign(PAL, {
+    fur: '#FFFDF9', shade: '#EEE6F2', shade2: '#DCD0E4', out: '#5B4A60', nose: '#3E3042',
+    eye: '#2B2032', muzzle: '#FFFFFF', blush: '255,138,170', pad: '#F3BFD0',
+    innerEar: { him: '#F6C9D6', her: '#FFB8CC' },
+  });
+}
 
 function bearState(who, o = {}) {
   return Object.assign({
@@ -33,7 +46,7 @@ function bearState(who, o = {}) {
     eyes: 'dot', eyeOpen: 1, eyeScale: 1, pupil: [0, 0], lid: 0, lidTilt: 0,
     brows: null, browY: 0,
     mouth: 'w', talk: 0, talkMood: 'normal', mouthScale: 1,
-    blush: who === 'her' ? 0.75 : 0.35, blushLines: 0,
+    blush: CUTE ? (who === 'her' ? 1 : 0.7) : (who === 'her' ? 0.75 : 0.35), blushLines: 0,
     sweat: 0, anger: 0, tears: 0, bags: 0, steam: 0, snot: 0, shiver: 0,
     cheekPuff: 0, crumbs: 0, fishTail: 0, frost: 0, melt: 0, cobweb: 0, redFace: 0,
     hideBody: false, reachL: null, reachR: null,
@@ -136,9 +149,11 @@ const ARM_PRESETS = {
 };
 
 function armPoints(side, a, bend, s, foreLen) {
-  const sx = side * 112, sy = -285;
+  const sx = side * (CUTE ? 100 : 112), sy = CUTE ? -268 : -285;
   const d1 = [side * Math.sin(a), Math.cos(a)];
-  const el = [sx + d1[0] * 62, sy + d1[1] * 62];
+  const up = CUTE ? 50 : 62;
+  if (CUTE) foreLen = Math.min(foreLen, 50);
+  const el = [sx + d1[0] * up, sy + d1[1] * up];
   const a2 = a - bend;
   const d2 = [side * Math.sin(a2), Math.cos(a2)];
   const paw = [el[0] + d2[0] * foreLen, el[1] + d2[1] * foreLen];
@@ -151,9 +166,9 @@ function drawArm(ctx, b, side) {
     // stretchy cartoon arm straight to a world-space target
     const lx = (reach[0] - b.x) / (b.s * b.flip);
     const ly = (reach[1] - b.y) / b.s + b.bob;
-    const sx = side * 112, sy = -285;
+    const sx = side * (CUTE ? 100 : 112), sy = CUTE ? -268 : -285;
     const mid = [lerp(sx, lx, 0.5), lerp(sy, ly, 0.5) + 14];
-    const th = b.who === 'her' ? 52 : 57;
+    const th = (b.who === 'her' ? 52 : 57) * (CUTE ? 0.92 : 1);
     outlinedStroke(ctx, [[sx, sy], mid, [lx, ly]], th, PAL.fur, PAL.out, LW);
     return [lx, ly];
   }
@@ -161,7 +176,7 @@ function drawArm(ctx, b, side) {
   const a = side < 0 ? (p.aL ?? b.aL) : (p.aR ?? b.aR);
   const bend = side < 0 ? (p.bL ?? b.bL) : (p.bR ?? b.bR);
   const pts = armPoints(side, a, bend, b.s, b.foreLen);
-  const th = b.who === 'her' ? 52 : 57;
+  const th = (b.who === 'her' ? 52 : 57) * (CUTE ? 0.92 : 1);
   outlinedStroke(ctx, pts, th, PAL.fur, PAL.out, LW);
   // soft shading along the underside of the arm
   ctx.save();
@@ -182,7 +197,8 @@ function drawArm(ctx, b, side) {
 // ---------- body ----------
 function drawBody(ctx, b, t) {
   const her = b.who === 'her';
-  const rx = her ? 136 : 146, ry = her ? 160 : 168;
+  const bk = CUTE ? 0.88 : 1;
+  const rx = (her ? 136 : 146) * bk, ry = (her ? 160 : 168) * (CUTE ? 0.86 : 1);
   const wk = b.walkAmt;
   const liftL = wk * 26 * Math.max(0, Math.sin(b.walk));
   const liftR = wk * 26 * Math.max(0, -Math.sin(b.walk));
@@ -206,7 +222,7 @@ function drawBody(ctx, b, t) {
       ctx.strokeStyle = PAL.out; ctx.lineWidth = 4; ctx.lineCap = 'round'; ctx.stroke();
     }
   }
-  const cy = b.pose === 'sit' ? -200 : -192;
+  const cy = (b.pose === 'sit' ? -200 : -192) + (CUTE ? 18 : 0);
   const bodyPath = () => bodyShape(ctx, 0, cy, rx, b.pose === 'sit' ? ry * 0.95 : ry);
   furFill(ctx, bodyPath, [-16, -18], b.frost);
   // belly
@@ -218,14 +234,15 @@ function drawBody(ctx, b, t) {
 // ---------- head ----------
 function headGeom(b) {
   const her = b.who === 'her';
-  return { rx: her ? 146 : 152, ry: her ? 130 : 134 };
+  const k = CUTE ? 1.1 : 1;
+  return { rx: (her ? 146 : 152) * k, ry: (her ? 130 : 134) * k };
 }
 
 function drawEars(ctx, b, hx, hy, rx, ry, look) {
   for (const side of [-1, 1]) {
     const ex = hx + side * rx * 0.66 + look * rx * 0.06;
-    const ey = hy - ry * 0.8;
-    ellipse(ctx, ex, ey, rx * 0.27, rx * 0.26);
+    const ey = hy - ry * (CUTE ? 0.78 : 0.8);
+    ellipse(ctx, ex, ey, rx * (CUTE ? 0.25 : 0.27), rx * (CUTE ? 0.25 : 0.26));
     fillStroke(ctx, PAL.fur, PAL.out, LW);
     ellipse(ctx, ex + side * 2, ey + 3, rx * 0.15, rx * 0.14);
     ctx.fillStyle = PAL.innerEar[b.who];
@@ -272,7 +289,7 @@ function drawBow(ctx, x, y, s, rot) {
 
 function drawEye(ctx, b, ex, ey, side, t) {
   const her = b.who === 'her';
-  const sc = (her ? 1.12 : 1) * b.eyeScale;
+  const sc = (her ? 1.12 : 1) * b.eyeScale * (CUTE ? 1.25 : 1);
   const type = b.eyes;
   ctx.save();
   ctx.lineCap = 'round';
@@ -301,7 +318,14 @@ function drawEye(ctx, b, ex, ey, side, t) {
       ctx.fillStyle = '#fff';
       ellipse(ctx, px - rx * 0.32, py - ry * 0.36, 5.2 * sc * hs, 5.2 * sc * hs * Math.min(1, b.eyeOpen * 1.3)); ctx.fill();
       ellipse(ctx, px + rx * 0.3, py + ry * 0.3, 2.4 * sc * hs, 2.4 * sc * hs * b.eyeOpen); ctx.fill();
-      if (big) { ellipse(ctx, px + rx * 0.35, py - ry * 0.45, 3 * sc, 3 * sc); ctx.fill(); }
+      if (big || CUTE) { ellipse(ctx, px + rx * 0.38, py - ry * 0.5, 2.6 * sc, 2.6 * sc * b.eyeOpen); ctx.fill(); }
+      if (CUTE && !big) {
+        ctx.save();
+        ellipse(ctx, px, py, rx, ry); ctx.clip();
+        ellipse(ctx, px, py + ry * 0.9, rx * 0.95, ry * 0.45);
+        ctx.fillStyle = 'rgba(150,120,200,0.35)'; ctx.fill();
+        ctx.restore();
+      }
     }
     if (her && b.eyeOpen >= 0.18) {
       // lashes on the outer corner
@@ -571,41 +595,43 @@ function drawHead(ctx, b, t, hx, hy) {
   // face features shift with look direction
   const fx = hx + look * rx * 0.2;
   const fy = hy + lookY * ry * 0.12;
-  const spread = rx * 0.36 * (1 - 0.12 * Math.abs(look));
+  const spread = rx * (CUTE ? 0.39 : 0.36) * (1 - 0.12 * Math.abs(look));
 
   // muzzle
   const puff = b.cheekPuff;
-  const mzx = fx + look * rx * 0.05, mzy = fy + ry * 0.33;
+  const mzx = fx + look * rx * 0.05, mzy = fy + ry * (CUTE ? 0.37 : 0.33);
+  const mzw = rx * (CUTE ? 0.37 : 0.43), mzh = ry * (CUTE ? 0.28 : 0.33);
   if (puff > 0) {
     for (const side of [-1, 1]) {
       ellipse(ctx, mzx + side * (40 + 10 * puff), mzy + 4, 30 * puff + 8, 26 * puff + 8);
       fillStroke(ctx, PAL.muzzle, PAL.out, 4);
     }
   }
-  ellipse(ctx, mzx, mzy, rx * 0.43 + puff * 10, ry * 0.33);
-  ctx.fillStyle = '#EDF1F6';
+  ellipse(ctx, mzx, mzy, mzw + puff * 10, mzh);
+  ctx.fillStyle = CUTE ? '#F2EAF4' : '#EDF1F6';
   ctx.fill();
   ctx.save();
-  ellipse(ctx, mzx, mzy, rx * 0.43 + puff * 10, ry * 0.33);
+  ellipse(ctx, mzx, mzy, mzw + puff * 10, mzh);
   ctx.clip();
-  ellipse(ctx, mzx - 4, mzy - 9, rx * 0.43 + puff * 10, ry * 0.33);
+  ellipse(ctx, mzx - 4, mzy - 9, mzw + puff * 10, mzh);
   ctx.fillStyle = PAL.muzzle;
   ctx.fill();
   ctx.restore();
-  ellipse(ctx, mzx, mzy, rx * 0.43 + puff * 10, ry * 0.33);
-  ctx.strokeStyle = 'rgba(51,58,71,0.35)';
+  ellipse(ctx, mzx, mzy, mzw + puff * 10, mzh);
+  ctx.strokeStyle = CUTE ? 'rgba(91,74,96,0.3)' : 'rgba(51,58,71,0.35)';
   ctx.lineWidth = 3.5;
   ctx.stroke();
 
   // blush
   if (b.blush > 0) {
     for (const side of [-1, 1]) {
-      const bx = fx + side * rx * 0.6, by = fy + ry * 0.2;
-      const g = ctx.createRadialGradient(bx, by, 2, bx, by, 34);
+      const bx = fx + side * rx * (CUTE ? 0.62 : 0.6), by = fy + ry * (CUTE ? 0.26 : 0.2);
+      const br = CUTE ? 44 : 34;
+      const g = ctx.createRadialGradient(bx, by, 2, bx, by, br);
       g.addColorStop(0, `rgba(${PAL.blush},${0.55 * b.blush})`);
       g.addColorStop(1, `rgba(${PAL.blush},0)`);
       ctx.fillStyle = g;
-      ellipse(ctx, bx, by, 36, 26);
+      ellipse(ctx, bx, by, br + 2, br * 0.75);
       ctx.fill();
       if (b.blushLines > 0) {
         ctx.save();
@@ -638,13 +664,13 @@ function drawHead(ctx, b, t, hx, hy) {
   // eyes + brows
   for (const side of [-1, 1]) {
     const ex = fx + side * spread;
-    const ey = fy - ry * 0.12;
+    const ey = fy - ry * (CUTE ? 0.03 : 0.12);
     drawEye(ctx, b, ex, ey, side, t);
     drawBrow(ctx, b, ex, ey, side);
   }
 
   // nose
-  const nx = fx + look * rx * 0.08, ny = fy + ry * 0.17;
+  const nx = fx + look * rx * 0.08, ny = fy + ry * (CUTE ? 0.24 : 0.17);
   ctx.beginPath();
   ctx.moveTo(nx - 24, ny - 8);
   ctx.quadraticCurveTo(nx, ny - 20, nx + 24, ny - 8);
@@ -814,7 +840,7 @@ function drawBear(ctx, b, t) {
     ctx.save();
     ctx.scale(b.s, b.s);
     ellipse(ctx, 0, -4 + b.hop / b.s, 170 * (1 - b.hop / 900), 26);
-    ctx.fillStyle = 'rgba(20,25,40,0.16)';
+    ctx.fillStyle = CUTE ? 'rgba(90,60,110,0.13)' : 'rgba(20,25,40,0.16)';
     ctx.fill();
     drawPuddle(ctx, b, t);
     ctx.restore();

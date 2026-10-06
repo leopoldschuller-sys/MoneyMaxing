@@ -517,6 +517,31 @@ def sfx_bell_round(c):
     return out
 
 
+def sfx_shutter(c):
+    # soft camera shutter: two gentle clicks and a tiny airy swish
+    out = np.zeros(int(0.25 * SR))
+    for k, g in ((0.0, 0.5), (0.07, 0.35)):
+        n = int(0.02 * SR)
+        add(out, k, lowpass(bandpass(noise(n), 1200, 5000), 4000) * exp_decay(n, 0.004), g)
+    n = int(0.12 * SR)
+    add(out, 0.02, bandpass(noise(n), 2500, 7000) * np.sin(np.pi * np.linspace(0, 1, n)) ** 2, 0.08)
+    return out * 0.7
+
+
+def sfx_softpop(c):
+    n = int(0.09 * SR)
+    t = np.arange(n) / SR
+    f = 640 * np.exp(-t * 14) + 380
+    return np.sin(2 * np.pi * np.cumsum(f) / SR) * env_adsr(n, 0.004, 0.02, 0.6, 0.04) * 0.3
+
+
+def sfx_chime(c):
+    out = np.zeros(int(1.2 * SR))
+    for i, m in enumerate(c.get('notes', (79, 84))):
+        add(out, i * 0.09, bell(midi(m), 0.9, 0.16))
+    return out
+
+
 SFX = {k[4:]: v for k, v in globals().items() if k.startswith('sfx_')}
 
 
@@ -630,6 +655,9 @@ MOODS = {
     'glam': dict(bpm=112, prog=[(43, 'maj7'), (40, 'min7'), (48, 'maj7'), (50, 'maj')], style='glam'),
     'tense': dict(bpm=80, prog=[(38, 'min')], style='tense'),
     'sad': dict(bpm=70, prog=[(45, 'min'), (41, 'maj'), (48, 'maj'), (43, 'maj')], style='sad'),
+    'lofi': dict(bpm=78, prog=[(41, 'maj7'), (40, 'min7'), (38, 'min7'), (43, 'dom7')], style='lofi'),
+    'dreamy': dict(bpm=68, prog=[(48, 'maj7'), (45, 'min7'), (41, 'maj7'), (43, 'maj')], style='dreamy'),
+    'bouncy': dict(bpm=104, prog=[(48, 'maj'), (45, 'min'), (41, 'maj'), (43, 'maj')], style='bouncy'),
 }
 SCALE_MAJ = [0, 2, 4, 5, 7, 9, 11]
 
@@ -715,6 +743,37 @@ def render_music(m):
             for i, nt in enumerate(notes + [notes[1] + 12]):
                 add(out, tb + i * beat, musicbox(midi(nt + 12), 1.5, 0.08))
             add(out, tb, pad(midi(root), bar, 0.12))
+        elif style == 'lofi':
+            for nt in notes:
+                add(out, tb, epiano(midi(nt + 12), bar * 0.98, 0.07))
+            add(out, tb, bass(midi(root - 12), beat * 1.6, 0.22))
+            add(out, tb + beat * 2.5, bass(midi(root - 12), beat * 1.2, 0.16))
+            for k in (0, 2.5):
+                add(out, tb + k * beat, kick(0.18))
+            for k in (1, 3):
+                add(out, tb + k * beat, snap(0.09))
+            for i in range(8):
+                add(out, tb + i * beat / 2 + (0.03 if i % 2 else 0), shaker(0.025))
+            for i in range(4):
+                if rng.random() < 0.5:
+                    add(out, tb + i * beat + beat / 2, kalimba(midi(rng.choice(notes) + 24), 0.9, 0.07))
+        elif style == 'dreamy':
+            for i, nt in enumerate(notes + [notes[1] + 12, notes[2] + 12]):
+                add(out, tb + i * beat * 0.66, musicbox(midi(nt + 24), 1.6, 0.06))
+            add(out, tb, pad(midi(root + 12), bar * 1.05, 0.13))
+            add(out, tb, bass(midi(root - 12), bar * 0.9, 0.14))
+        elif style == 'bouncy':
+            add(out, tb, pizz(midi(root - 12), beat * 0.8, 0.6))
+            add(out, tb + beat * 2, pizz(midi(root - 5), beat * 0.8, 0.5))
+            for k in (1, 3):
+                for nt in notes:
+                    add(out, tb + k * beat, pluck(midi(nt + 12), beat * 0.5, 0.45, 0.99), 0.12)
+            for i in range(8):
+                if rng.random() < 0.45:
+                    deg = rng.choice([0, 2, 4, 7, 9, 12]) + 72
+                    add(out, tb + i * beat / 2, kalimba(midi(deg), 0.5, 0.09))
+            for k in range(4):
+                add(out, tb + k * beat, kick(0.14))
         elif style == 'tense':
             pass
     if style == 'tense':
@@ -757,11 +816,12 @@ def main(skit):
     for m in cues['music']:
         add(mus, m['t0'], render_music(m))
     fx = reverb(fx, mix=0.12, size=0.8)
-    mix = fx * 1.0 + mus * 0.7
+    lv = cues.get('mix') or {}
+    mix = fx * lv.get('sfx', 1.0) + mus * lv.get('music', 0.7)
     stereo = np.stack([mix, mix], axis=1)
     # loudness: normalise RMS of the loud parts, then soft-limit
     rms = np.sqrt(np.mean(stereo ** 2) + 1e-12)
-    stereo *= 0.16 / rms
+    stereo *= lv.get('rms', 0.16) / rms
     stereo = np.tanh(stereo * 1.1) / np.tanh(1.1)
     peak = np.max(np.abs(stereo))
     if peak > 0.97:

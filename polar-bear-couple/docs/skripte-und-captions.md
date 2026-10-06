@@ -1,4 +1,4 @@
-# Skripte, Captions & Hashtags – 5 Eisbär-Couple-Videos
+# Skripte, Captions & Hashtags – 8 Eisbär-Couple-Videos
 
 Alle Videos sind **1080×1920 (9:16), 30 fps, H.264 + AAC**, Länge 27–30 s.
 Die Hook-Zeile steht ab Frame 0 oben im Bild, damit sie auch als Thumbnail funktioniert.
@@ -93,6 +93,54 @@ Die Figuren sind in allen 5 Videos identisch:
 
 **Caption:** `the thermostat war is real 🥶🔥 are you team heat or team ice?`
 **Hashtags:** `#himvsher #thermostat #couplehumor #polarbear #polaropposites`
+
+---
+
+## 6) `06_what_are_you_thinking.mp4` – „when she asks what he's thinking about 💭“ (26,5 s)
+
+| Zeit | Beat |
+|---|---|
+| 0–4 s | Beide sitzen unter Polarlichtern im Schnee. Sie: „what are you thinking about? 🥰“ |
+| 4–7 s | Ihre Gedankenblase: „our future… our wedding… what we'd name our cubs 🥹💍“ |
+| 7–10 s | Er: „hm? nothing“, sie: „come on, tell me 🥺“ |
+| 10–14 s | *meanwhile in his head*: ein einzelner Lachs schwimmt im Kreis 🎵 |
+| 14–18 s | „…are you thinking about salmon again? 😑“ / „…no 😅“ |
+| 18–21 s | Er rückt ran: „I was thinking about you ❤️“, sie schmilzt, das Polarlicht wird rosa |
+| 21–26 s | In seinem Kopf trägt der Lachs jetzt ihre Schleife 🎀: **technically not a lie 🐟🎀** |
+
+**Caption:** `what is he REALLY thinking about 😭🐟 send this to your him`
+**Hashtags:** `#couplehumor #relationshipmemes #whatishethinking #polarbear #polaropposites`
+
+---
+
+## 7) `07_taking_pictures.mp4` – „him vs me taking pictures 📸“ (26,5 s)
+
+| Zeit | Beat |
+|---|---|
+| 0–8 s | **HIM:** sie posiert süß, seine 3 Fotos: verwackelt, Daumen im Bild, nur Stirn und Schleife |
+| 8–11 s | „babe… 🙂“ / „you look great tho 👍“ |
+| 12–19 s | **ME:** sie gibt Anweisungen: „chin up“, „no, down“, „turn left“, „smile!“, „not like that 😭“, „relax…“, „be natural!!“. Fotozähler 📸 12 → 247 |
+| 19–21 s | „perfect ✨“ (Foto #247: er mit verkrampftem Grinsen) |
+| 21–26 s | Gepostet wird … ihr eigenes Selfie, er nur halb am Rand: **…then posts her own selfie 🙃** |
+
+**Caption:** `247 photos later… and she posts her selfie 🙃📸 who takes the better pics in your relationship?`
+**Hashtags:** `#himvsme #couplehumor #boyfriendphotographer #polarbear #polaropposites`
+
+---
+
+## 8) `08_where_to_eat.mp4` – „asking her where she wants to eat 🍣“ (27 s)
+
+| Zeit | Beat |
+|---|---|
+| 0–3 s | Er: „where do you wanna eat? 🤔“, sie: „idk, you choose 🙂“ |
+| 3–10 s | 🍣 „nah“, 🍕 „too heavy“, 🍔 „had that last week“, 🌮 „hmm… no“ |
+| 10–13 s | Montage mit noch mehr Essen, alles abgelehnt. Er versinkt im Sofa: ⏱️ 47 minutes later… |
+| 13–17 s | „ok what do YOU want?“, sie überlegt 🤔 … „sushi! 🍣✨“ |
+| 17–23 s | Sein toter Blick: „…I literally said sushi first“, sie: „yeah but you said it like you didn't mean it 🙂“ |
+| 23–27 s | Er kippt aufs Sofa: **every couple ever 🙃** |
+
+**Caption:** `it's always sushi. it was always going to be sushi 🍣 tag the one who can never decide`
+**Hashtags:** `#couplehumor #wheretoeat #relationshipmemes #polarbear #polaropposites`
 
 ---
 
