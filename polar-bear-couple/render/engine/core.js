@@ -120,10 +120,16 @@ function fillStroke(ctx, fill, stroke, lw) {
   if (stroke && lw) { ctx.strokeStyle = stroke; ctx.lineWidth = lw; ctx.lineJoin = 'round'; ctx.lineCap = 'round'; ctx.stroke(); }
 }
 // Thick rounded stroke with an outline (draws the outline first, then the fill on top).
-function outlinedStroke(ctx, pts, width, fill, outline, olw) {
+function outlinedStroke(ctx, pts, width, fill, outline, olw, curved = false) {
   ctx.beginPath();
   ctx.moveTo(pts[0][0], pts[0][1]);
-  for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]);
+  if (curved && pts.length === 3) {
+    // smooth bend: quadratic curve that passes through the middle point
+    const c = [2 * pts[1][0] - (pts[0][0] + pts[2][0]) / 2, 2 * pts[1][1] - (pts[0][1] + pts[2][1]) / 2];
+    ctx.quadraticCurveTo(c[0], c[1], pts[2][0], pts[2][1]);
+  } else {
+    for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]);
+  }
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
   ctx.strokeStyle = outline;
@@ -308,6 +314,7 @@ class Skit {
       sfx: this.sfxList,
       music: this.musicList,
       mix: this.def.mix || null,
+      fps: this.def.fps || 30,
     };
   }
 

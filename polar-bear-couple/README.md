@@ -10,13 +10,20 @@ Eisbären** in jedem Video. Hochformat für TikTok, Reels und Shorts.
 | `videos/03_not_hungry.mp4` | she said she's not hungry 🙂 | 28,5 s |
 | `videos/04_getting_ready.mp4` | him vs her getting ready 💅 | 28,8 s |
 | `videos/05_thermostat_war.mp4` | him vs her: the thermostat 🥶🔥 | 27,0 s |
-| `videos/06_what_are_you_thinking.mp4` | when she asks what he's thinking about 💭 | 26,5 s |
-| `videos/07_taking_pictures.mp4` | him vs me taking pictures 📸 | 26,5 s |
-| `videos/08_where_to_eat.mp4` | asking her where she wants to eat 🍣 | 27,0 s |
+| `videos/06_what_are_you_thinking.mp4` | when she asks what he's thinking about 💭 (im Bett) | 27,0 s |
+| `videos/07_couple_selfie.mp4` | taking a cute couple selfie 📸 (auf der Couch) | 27,5 s |
+| `videos/08_where_to_eat.mp4` | asking her where she wants to eat 🍣 (am Küchentisch) | 27,5 s |
 
-Die Videos 06–08 nutzen den überarbeiteten **„cute“-Look**: größere Köpfe, größere glänzende Augen, wärmere Pastellfarben,
-runde Schrift (Fredoka, SIL Open Font License), neue Sets (Polarlicht-Nacht, verschneiter Park, gemütliches Wohnzimmer)
-und einen leiseren, sanfteren Ton (Lo-fi/Spieluhr-Musik, nur wenige weiche Soundeffekte).
+Die Videos 06–08 nutzen den überarbeiteten **„cute“-Look** und eine **flüssigere Animation in 60 fps**:
+- größere Köpfe, größere glänzende Augen, weiche Verläufe statt harter Schatten, „Nudel“-Ärmchen mit runden Pfoten,
+  runde Schrift (Fredoka, SIL Open Font License), Sprechblasen in Pastellblau/-rosa
+- alles spielt zu Hause: Bett (`drawCozyBedroom`), Couch (`drawCozyRoom`), Küchentisch (`drawCozyKitchen`)
+- Animation über `Actor` (`render/engine/anim.js`): jede Bewegung ist ein weich interpolierter Keyframe-Track,
+  dazu Atmen, leichtes Wippen, natürliches Blinzeln, Augenbewegungen, Kopfnicken beim Reden,
+  Squash & Stretch bei Reaktionen (Überraschung, Hüpfer, Seufzer, Kopfschütteln) und nachschwingende Schleife/Fell.
+  Gesichtsausdrücke wechseln nie hart, sondern während eines kurzen Blinzelns.
+- leiser, sanfter Ton (Lo-fi/Spieluhr-Musik, nur wenige weiche Soundeffekte)
+
 Ein Skit schaltet den Look mit `useCuteLook();` am Dateianfang ein.
 
 Format: 1080×1920, 30 fps, H.264 + AAC-Stereo. Der Ton besteht aus durchgehender Musik und Soundeffekten,
@@ -62,7 +69,7 @@ So funktioniert es:
   `S.sfx(t, name)` und `S.music(t0, t1, mood)`.
   Moods: normal, sweet, angry, shout, sleepy, sad, excited.
   Musik: cozy, night, romantic, silly, sneaky, chaos, glam, tense, sad, lofi, dreamy, bouncy.
-- `draw(ctx, t, S)`: Kamera, Set (`drawBedroomBack`, `drawKitchen`, `drawLivingRoom`, `drawVanity`, neu: `drawAuroraNight`, `drawSnowPark`, `drawCozyRoom`) und die
+- `draw(ctx, t, S)`: Kamera, Set (`drawBedroomBack`, `drawKitchen`, `drawLivingRoom`, `drawVanity`, neu: `drawCozyBedroom`, `drawCozyRoom`, `drawCozyKitchen`) und die
   Bären über `bearState('him'|'her', {...})`.
   Ausdrücke: `eyes` (dot, happy, sleep, shock, heart, sparkle, teary, spiral, x, line), `mouth` (w, smile, grin, frown, flat, o,
   bigO, yawn, wobbly, smirk, pout, teeth, tongue, chew), dazu `brows`, `lid`, `anger`, `sweat`, `tears`, `steam`, `redFace`, `frost`, `melt` …

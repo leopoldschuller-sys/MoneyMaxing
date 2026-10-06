@@ -19,7 +19,6 @@ function arg(name, fallback) {
 async function main() {
   const skit = process.argv[2];
   if (!skit) throw new Error('usage: render.js <skit> [--stills t1,t2] [--fps 30]');
-  const fps = Number(arg('--fps', 30));
   const stills = arg('--stills', null);
   fs.mkdirSync(BUILD, { recursive: true });
 
@@ -33,6 +32,7 @@ async function main() {
   if (loadError) throw new Error(loadError);
 
   const meta = await page.evaluate(() => window.skitMeta());
+  const fps = Number(arg('--fps', meta.fps || 30));
   console.log(`${skit}: ${meta.duration}s, ${meta.sfx.length} sfx, ${meta.music.length} music cues`);
 
   const grab = (t) => page.evaluate((tt) => window.renderFrame(tt), t);
@@ -61,7 +61,7 @@ async function main() {
   const ff = spawn('ffmpeg', [
     '-y', '-loglevel', 'error',
     '-f', 'image2pipe', '-framerate', String(fps), '-c:v', 'mjpeg', '-i', '-',
-    '-c:v', 'libx264', '-preset', 'medium', '-crf', '17', '-pix_fmt', 'yuv420p',
+    '-c:v', 'libx264', '-preset', 'medium', '-crf', fps > 30 ? '19' : '17', '-pix_fmt', 'yuv420p',
     '-movflags', '+faststart', out,
   ], { stdio: ['pipe', 'inherit', 'inherit'] });
   const done = new Promise((res, rej) => ff.on('close', (c) => (c === 0 ? res() : rej(new Error('ffmpeg exit ' + c)))));

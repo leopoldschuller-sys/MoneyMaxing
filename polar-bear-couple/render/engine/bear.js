@@ -88,18 +88,31 @@ function bodyShape(ctx, cx, cy, rx, ry) {
 }
 
 // Fill a closed path with fur + a cel-shaded crescent at the lower right, then outline it.
-function furFill(ctx, pathFn, shadeOffset = [-14, -16], frost = 0) {
-  pathFn();
-  ctx.fillStyle = PAL.shade;
-  ctx.fill();
-  ctx.save();
-  pathFn();
-  ctx.clip();
-  ctx.translate(shadeOffset[0], shadeOffset[1]);
-  pathFn();
-  ctx.fillStyle = PAL.fur;
-  ctx.fill();
-  ctx.restore();
+function furFill(ctx, pathFn, shadeOffset = [-14, -16], frost = 0, grad = null) {
+  if (CUTE && grad) {
+    // soft volume: light from the upper left fading into a lavender shade at the edges
+    const [gx, gy, gr] = grad;
+    const g = ctx.createRadialGradient(gx, gy, gr * 0.05, gx, gy, gr);
+    g.addColorStop(0, '#FFFFFF');
+    g.addColorStop(0.5, PAL.fur);
+    g.addColorStop(0.82, PAL.shade);
+    g.addColorStop(1, PAL.shade2);
+    pathFn();
+    ctx.fillStyle = g;
+    ctx.fill();
+  } else {
+    pathFn();
+    ctx.fillStyle = PAL.shade;
+    ctx.fill();
+    ctx.save();
+    pathFn();
+    ctx.clip();
+    ctx.translate(shadeOffset[0], shadeOffset[1]);
+    pathFn();
+    ctx.fillStyle = PAL.fur;
+    ctx.fill();
+    ctx.restore();
+  }
   if (frost > 0) {
     ctx.save();
     pathFn();
@@ -177,7 +190,19 @@ function drawArm(ctx, b, side) {
   const bend = side < 0 ? (p.bL ?? b.bL) : (p.bR ?? b.bR);
   const pts = armPoints(side, a, bend, b.s, b.foreLen);
   const th = (b.who === 'her' ? 52 : 57) * (CUTE ? 0.92 : 1);
-  outlinedStroke(ctx, pts, th, PAL.fur, PAL.out, LW);
+  outlinedStroke(ctx, pts, th, PAL.fur, PAL.out, LW, CUTE);
+  if (CUTE) {
+    // round little paw at the end + soft shade, no hard elbow
+    const pad = side < 0 ? b.padL : b.padR;
+    if (!pad) {
+      ellipse(ctx, pts[2][0], pts[2][1], th * 0.56, th * 0.54);
+      fillStroke(ctx, PAL.fur, PAL.out, LW);
+      ctx.beginPath();
+      for (const k of [-1, 1]) { ctx.moveTo(pts[2][0] + k * th * 0.16, pts[2][1] + th * 0.2); ctx.lineTo(pts[2][0] + k * th * 0.16, pts[2][1] + th * 0.42); }
+      ctx.strokeStyle = PAL.out; ctx.lineWidth = 3.5; ctx.lineCap = 'round'; ctx.stroke();
+    } else drawPaw(ctx, pts[2][0], pts[2][1], th / 2 + 4, true, 0);
+    return pts[2];
+  }
   // soft shading along the underside of the arm
   ctx.save();
   ctx.globalAlpha = 0.35;
@@ -224,7 +249,7 @@ function drawBody(ctx, b, t) {
   }
   const cy = (b.pose === 'sit' ? -200 : -192) + (CUTE ? 18 : 0);
   const bodyPath = () => bodyShape(ctx, 0, cy, rx, b.pose === 'sit' ? ry * 0.95 : ry);
-  furFill(ctx, bodyPath, [-16, -18], b.frost);
+  furFill(ctx, bodyPath, [-16, -18], b.frost, [-rx * 0.3, cy - ry * 0.45, ry * 1.7]);
   // belly
   ellipse(ctx, 0, cy + 30, rx * 0.62, ry * 0.62);
   ctx.fillStyle = 'rgba(255,255,255,0.9)';
@@ -326,6 +351,17 @@ function drawEye(ctx, b, ex, ey, side, t) {
         ctx.fillStyle = 'rgba(150,120,200,0.35)'; ctx.fill();
         ctx.restore();
       }
+    }
+    if (b.smileEyes > 0 && b.eyeOpen >= 0.18) {
+      // cheeks push the lower lids up: happy squint
+      const lift = b.smileEyes * ry * 0.75;
+      ctx.save();
+      ellipse(ctx, px, py + ry * 1.35 - lift, rx * 1.7, ry * 0.95);
+      ctx.fillStyle = PAL.fur; ctx.fill();
+      ctx.beginPath();
+      ctx.ellipse(px, py + ry * 1.35 - lift, rx * 1.15, ry * 0.95, 0, Math.PI * 1.15, Math.PI * 1.85);
+      ctx.strokeStyle = PAL.eye; ctx.lineWidth = 4; ctx.stroke();
+      ctx.restore();
     }
     if (her && b.eyeOpen >= 0.18) {
       // lashes on the outer corner
@@ -578,8 +614,15 @@ function drawHead(ctx, b, t, hx, hy) {
   ctx.translate(-hx, -hy);
 
   drawEars(ctx, b, hx, hy, rx, ry, look);
-  if (!her) drawTuft(ctx, hx + look * 14, hy, ry);
-  furFill(ctx, () => headShape(ctx, hx, hy, rx, ry, 1, t), [-14, -16], b.frost);
+  if (!her) {
+    ctx.save();
+    ctx.translate(hx, hy - ry);
+    ctx.rotate(b.tuftSwing || 0);
+    ctx.translate(-hx, -(hy - ry));
+    drawTuft(ctx, hx + look * 14, hy, ry);
+    ctx.restore();
+  }
+  furFill(ctx, () => headShape(ctx, hx, hy, rx, ry, 1, t), [-14, -16], b.frost, [hx - rx * 0.32, hy - ry * 0.42, Math.max(rx, ry) * 1.6]);
   if (b.redFace > 0) {
     ctx.save();
     headShape(ctx, hx, hy, rx, ry, 1, t); ctx.clip();
@@ -725,7 +768,7 @@ function drawHead(ctx, b, t, hx, hy) {
   }
 
   // pink bow
-  if (her) drawBow(ctx, hx + rx * 0.5 + look * 10, hy - ry * 0.84, 0.92, 0.32);
+  if (her) drawBow(ctx, hx + rx * 0.5 + look * 10, hy - ry * 0.84, 0.92, 0.32 + (b.bowSwing || 0));
 
   // frost: icicles hanging from the chin
   if (b.frost > 0.3) {
