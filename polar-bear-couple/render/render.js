@@ -1,7 +1,8 @@
 // Renders one skit to build/<skit>.video.mp4 (+ build/<skit>.cues.json for the audio synth).
 // Usage:
-//   NODE_PATH=$(npm root -g) node render/render.js <skit> [--stills 1.5,7,12.25] [--fps 30]
+//   NODE_PATH=$(npm root -g) node render/render.js <skit> [--stills 1.5,7,12.25] [--cues] [--fps 30]
 // --stills writes PNGs of single moments to build/stills/ instead of rendering the whole video.
+// --cues only writes build/<skit>.cues.json (for re-doing the soundtrack without re-rendering).
 const { chromium } = require('playwright');
 const { spawn } = require('child_process');
 const fs = require('fs');
@@ -32,7 +33,7 @@ async function main() {
   if (loadError) throw new Error(loadError);
 
   const meta = await page.evaluate(() => window.skitMeta());
-  console.log(`${skit}: ${meta.duration}s, ${meta.voices.length} syllables, ${meta.sfx.length} sfx`);
+  console.log(`${skit}: ${meta.duration}s, ${meta.sfx.length} sfx, ${meta.music.length} music cues`);
 
   const grab = (t) => page.evaluate((tt) => window.renderFrame(tt), t);
 
@@ -51,6 +52,10 @@ async function main() {
   }
 
   fs.writeFileSync(path.join(BUILD, `${skit}.cues.json`), JSON.stringify(meta, null, 1));
+  if (process.argv.includes('--cues')) {
+    await browser.close();
+    return;
+  }
 
   const out = path.join(BUILD, `${skit}.video.mp4`);
   const ff = spawn('ffmpeg', [

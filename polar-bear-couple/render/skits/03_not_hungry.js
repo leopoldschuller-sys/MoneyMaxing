@@ -8,31 +8,35 @@ makeSkit({
   name: '03_not_hungry',
   duration: 28.5,
   setup(S) {
-    S.music(0, 5.6, 'silly', { gain: 0.42 });
+    S.music(0, 5.6, 'silly', { gain: 0.5 });
     S.say('him', 0.35, "I'm ordering food, want anything? 🍔", { dur: 1.7, hold: 0.4 });
     S.say('her', 2.4, "no, I'm not hungry 🙂", { mood: 'sweet', dur: 1.15, hold: 0.6 });
     S.sfx(3.9, 'doorbell');
     S.sfx(4.35, 'whoosh', { dur: 0.35 });
     S.sfx(4.55, 'sparkle', { gain: 0.6 });
     S.say('him', 4.75, 'yesss 😋', { mood: 'excited', dur: 0.7, hold: 0.4 });
-    S.music(5.6, 6.95, 'sneaky', { gain: 0.5 });
+    S.music(5.6, 6.95, 'sneaky', { gain: 0.55 });
+    S.music(6.95, 10.4, 'silly', { gain: 0.5 });
     S.sfx(5.95, 'whoosh', { dur: 0.25, gain: 0.6 });
     S.sfx(6.15, 'chomp');
     S.sfx(6.45, 'chomp');
     S.sfx(6.75, 'gulp');
     S.say('him', 7.3, 'did you eat my fries?', { dur: 1.1, hold: 0.5 });
     S.say('her', 8.75, 'no?? 😇', { mood: 'sweet', dur: 0.7, hold: 0.8 });
-    S.music(10.4, 12.2, 'sneaky', { gain: 0.5, tempo: 1.25 });
+    S.music(10.4, 12.25, 'sneaky', { gain: 0.55, tempo: 1.25 });
+    S.music(12.5, 16.15, 'silly', { gain: 0.5 });
     S.sfx(10.75, 'whoosh', { dur: 0.25, gain: 0.6 });
     for (const tt of [11.0, 11.25, 11.5, 11.75]) S.sfx(tt, 'chomp');
     S.sfx(12.3, 'sting', { kind: 'dun' });
     S.say('her', 13.1, "I'm not hungry 🙂", { mood: 'sweet', dur: 1.0, hold: 0.8 });
     S.sfx(15.0, 'whoosh', { dur: 0.3, gain: 0.5 });
     S.say('her', 16.3, 'just one bite? 🥺', { mood: 'sweet', dur: 1.1, hold: 0.8 });
-    S.music(16.2, 18.4, 'sad', { gain: 0.5 });
-    S.sfx(18.3, 'sigh', { voice: 'him', gain: 1.2 });
+    S.music(16.2, 18.9, 'sad', { gain: 0.55 });
+    S.sfx(18.3, 'whoosh', { dur: 0.8, gain: 0.5 });
     S.sfx(19.0, 'whoosh', { dur: 0.3 });
-    S.music(19.2, 20.3, 'chaos', { gain: 0.4 });
+    S.music(19.2, 20.3, 'chaos', { gain: 0.5 });
+    S.music(20.35, 25.25, 'silly', { gain: 0.5 });
+    S.music(25.9, 28.5, 'sad', { gain: 0.5 });
     for (let tt = 19.3; tt < 20.2; tt += 0.12) S.sfx(tt, 'chomp', { gain: 0.8 });
     S.sfx(20.35, 'sparkle');
     S.say('her', 21.0, 'babe…', { mood: 'sweet', dur: 0.6, hold: 0.5 });

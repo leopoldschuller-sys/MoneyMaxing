@@ -31,7 +31,8 @@ makeSkit({
   duration: 27.0,
   setup(S) {
     S.sfx(0.1, 'chatter', { dur: 1.7 });
-    S.music(0.0, 8.4, 'silly', { gain: 0.35 });
+    S.music(0.0, 8.45, 'silly', { gain: 0.5 });
+    S.music(8.5, 12.05, 'night', { gain: 0.5 });
     S.say('her', 0.35, "babe… I'm freezing 🥶", { mood: 'sad', dur: 1.3, hold: 0.4 });
     for (const tt of [2.0, 2.35, 2.7]) S.sfx(tt, 'boing', { gain: 0.6 });
     S.sfx(3.1, 'dial');
@@ -52,7 +53,8 @@ makeSkit({
     S.say('her', 18.15, 'wait… I have an idea 😏', { mood: 'sweet', dur: 1.2, hold: 0.3 });
     S.sfx(19.55, 'whoosh', { dur: 0.3 });
     S.sfx(19.75, 'hearts');
-    S.music(19.6, 27.0, 'romantic', { gain: 0.45 });
+    S.music(18.0, 19.55, 'sneaky', { gain: 0.5 });
+    S.music(19.6, 27.0, 'romantic', { gain: 0.55 });
     S.say('her', 19.9, "you're my heater now 🥰", { mood: 'sweet', dur: 1.3, hold: 0.6 });
     for (let tt = 22.1; tt < 24.6; tt += 0.42) S.sfx(tt, 'drip', { gain: 0.7 });
     S.say('him', 23.2, 'worth it 🫠', { mood: 'sleepy', dur: 0.8, hold: 0.8 });

@@ -11,8 +11,9 @@ Eisbären** in jedem Video. Hochformat für TikTok, Reels und Shorts.
 | `videos/04_getting_ready.mp4` | him vs her getting ready 💅 | 28,8 s |
 | `videos/05_thermostat_war.mp4` | him vs her: the thermostat 🥶🔥 | 27,0 s |
 
-Format: 1080×1920, 30 fps, H.264 + AAC-Stereo. Der Ton (Brabbel-Stimmen der Bären, Soundeffekte und Musik)
-ist komplett synthetisch erzeugt, es gibt also keine fremden Samples und keine Musiklizenzen.
+Format: 1080×1920, 30 fps, H.264 + AAC-Stereo. Der Ton besteht aus durchgehender Musik und Soundeffekten,
+beides komplett synthetisch erzeugt, es gibt also keine fremden Samples und keine Musiklizenzen. Die Bären haben keine Stimmen,
+die Dialoge stehen als Sprechblasen im Bild.
 
 ## Dokumente
 
@@ -44,11 +45,12 @@ So funktioniert es:
 1. `render/render.js` öffnet `render/page.html` in Headless-Chromium und zeichnet jedes Frame mit Canvas 2D.
    Die Frames gehen per Pipe an ffmpeg (`build/<skit>.video.mp4`).
 2. Dieselbe Skit-Datei exportiert alle Ton-Cues (`build/<skit>.cues.json`). `render/audio.py` synthetisiert daraus
-   den Soundtrack, wobei die Silben der Stimmen exakt zu den Mundbewegungen passen.
+   den Soundtrack aus Musik und Soundeffekten.
+   Nur den Ton neu machen, ohne die Bilder neu zu rendern: `AUDIO_ONLY=1 ./render/build.sh`.
 3. `render/build.sh` muxt Bild und Ton nach `videos/<skit>.mp4`.
 
 **Neue Folge:** Kopiere eine Datei aus `render/skits/` (z. B. `03_not_hungry.js`) und passe sie an:
-- `setup(S)`: Timeline mit `S.say(who, t, text, {mood})` (Sprechblase + Stimme), `S.think(...)` (Gedankenblase),
+- `setup(S)`: Timeline mit `S.say(who, t, text, {mood})` (Sprechblase + Mundbewegung), `S.think(...)` (Gedankenblase),
   `S.sfx(t, name)` und `S.music(t0, t1, mood)`.
   Moods: normal, sweet, angry, shout, sleepy, sad, excited.
   Musik: cozy, night, romantic, silly, sneaky, chaos, glam, tense, sad.

@@ -9,7 +9,7 @@ makeSkit({
   name: '02_asleep_mid_argument',
   duration: 27.5,
   setup(S) {
-    S.music(0, 4.75, 'tense', { gain: 0.25 });
+    S.music(0, 4.75, 'tense', { gain: 0.4 });
     S.say('her', 0.3, 'and ANOTHER thing…', { mood: 'angry', dur: 1.25, hold: 0.3 });
     S.say('him', 1.85, 'mhm…', { mood: 'sleepy', dur: 0.6, hold: 0.3 });
     S.say('her', 2.75, 'are you even listening?! 😤', { mood: 'angry', dur: 1.45, hold: 0.4 });
@@ -17,17 +17,18 @@ makeSkit({
     S.sfx(4.8, 'scratch');
     S.sfx(5.35, 'sting', { kind: 'dundun' });
     S.say('her', 6.2, 'excuse me??', { mood: 'shout', dur: 0.85, hold: 0.6 });
-    S.sfx(7.7, 'sigh', { voice: 'her', gain: 1.8 });
-    S.sfx(8.9, 'hmph', { voice: 'her' });
+    S.music(6.2, 14.55, 'sneaky', { gain: 0.5 });
+    S.sfx(7.7, 'whoosh', { dur: 1.1, gain: 1.3 });
+    S.sfx(8.85, 'thud', { gain: 0.6 });
     S.sfx(9.7, 'click');
     S.sfx(9.75, 'sparkle', { gain: 0.6 });
     S.sfx(11.8, 'whoosh', { dur: 0.5 });
     S.say('him', 12.55, 'ahh… so refreshing ❄️', { mood: 'sleepy', dur: 1.4, hold: 0.5 });
     S.sfx(13.6, 'pop');
-    S.music(14.6, 16.9, 'tense', { gain: 0.35 });
+    S.music(14.6, 16.95, 'tense', { gain: 0.5 });
     S.sfx(14.7, 'kettle');
     S.say('him', 17.0, 'mmm… I love you…', { mood: 'sleepy', dur: 1.3, hold: 0.9 });
-    S.music(17.6, 19.95, 'romantic', { gain: 0.5 });
+    S.music(17.0, 20.4, 'romantic', { gain: 0.55 });
     S.sfx(17.7, 'hearts');
     S.say('him', 19.75, '…salmon 🐟', { mood: 'sleepy', dur: 0.75, hold: 0.9 });
     S.sfx(20.45, 'scratch');
@@ -38,7 +39,8 @@ makeSkit({
     S.sfx(22.72, 'boing');
     S.say('him', 23.35, "huh?? what'd I do??", { mood: 'excited', dur: 1.1, hold: 0.6 });
     S.sfx(24.9, 'bell_round');
-    S.music(24.9, 27.5, 'chaos', { gain: 0.45 });
+    S.music(21.0, 22.65, 'tense', { gain: 0.5 });
+    S.music(22.7, 27.5, 'chaos', { gain: 0.5 });
   },
 
   draw(ctx, t, S) {

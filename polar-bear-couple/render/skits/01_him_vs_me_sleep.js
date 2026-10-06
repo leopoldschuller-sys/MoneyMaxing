@@ -8,15 +8,14 @@ makeSkit({
   name: '01_him_vs_me_sleep',
   duration: 29.5,
   setup(S) {
-    S.music(0, 2.45, 'cozy', { gain: 0.5 });
-    S.sfx(0.3, 'yawn', { voice: 'him' });
+    S.music(0, 2.45, 'cozy', { gain: 0.55 });
     S.say('him', 1.25, 'night babe ❤️', { mood: 'sweet', hold: 0.7 });
     S.sfx(2.45, 'click');
     for (let tt = SNORE_T0; tt < WAKE - 0.3; tt += SNORE_P) S.sfx(tt, 'snore', { gain: tt > 13.9 ? 1.25 : 0.85 });
     S.sfx(3.05, 'ding');
     S.sfx(4.55, 'whoosh');
     S.sfx(4.7, 'crickets', { dur: 9.2, gain: 0.5 });
-    S.music(4.7, 13.95, 'night', { gain: 0.32 });
+    S.music(2.5, 13.95, 'night', { gain: 0.45 });
     S.think('her', 6.0, 'did I lock the door? 🤔', { dur: 2.3, at: [600, 610] });
     S.sfx(6.0, 'pop');
     S.think('her', 8.5, 'that thing I said in 7th grade 😳', { dur: 2.3, at: [600, 610] });
@@ -25,7 +24,8 @@ makeSkit({
     S.sfx(10.9, 'tick');
     for (let tt = 11.5; tt < 13.8; tt += 0.55) S.sfx(tt, 'scroll');
     S.sfx(13.95, 'sting', { kind: 'dun' });
-    S.music(14.0, 15.6, 'tense', { gain: 0.35 });
+    S.music(13.95, 18.45, 'tense', { gain: 0.45 });
+    S.music(18.5, 22.3, 'sad', { gain: 0.5 });
     S.sfx(15.7, 'sting', { kind: 'dundun' });
     S.think('her', 16.3, 'HOW does he do that 😤', { dur: 2.0, at: [560, 600] });
     S.sfx(18.5, 'boop');
@@ -36,7 +36,8 @@ makeSkit({
     S.say('him', 22.35, 'aww come here 🥰', { mood: 'sweet', dur: 0.95 });
     S.sfx(23.2, 'whoosh', { gain: 0.5 });
     S.sfx(23.6, 'hearts');
-    S.music(23.2, 26.0, 'romantic', { gain: 0.45 });
+    S.music(22.35, 26.05, 'romantic', { gain: 0.55 });
+    S.music(26.1, 29.5, 'night', { gain: 0.4 });
     S.sfx(24.45, 'ding');
     S.sfx(24.6, 'snore', { voice: 'her', gain: 0.5 });
     S.sfx(26.9, 'snore', { voice: 'her', gain: 0.5 });

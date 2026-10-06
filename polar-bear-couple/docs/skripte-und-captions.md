@@ -2,8 +2,9 @@
 
 Alle Videos sind **1080×1920 (9:16), 30 fps, H.264 + AAC**, Länge 27–30 s.
 Die Hook-Zeile steht ab Frame 0 oben im Bild, damit sie auch als Thumbnail funktioniert.
-On-Screen-Text ist Englisch (globales/US-Publikum), die Bären „sprechen“ in Brabbel-Sprache
-(wie Animal Crossing). Dadurch funktionieren die Clips in jedem Land.
+On-Screen-Text ist Englisch (globales/US-Publikum). Die Bären haben keine Stimmen, die Dialoge stehen als
+Sprechblasen im Bild, der Ton besteht aus Musik und Soundeffekten. Dadurch funktionieren die Clips in jedem Land,
+und du kannst problemlos einen Trend-Sound darunterlegen.
 
 Die Figuren sind in allen 5 Videos identisch:
 - **Er:** etwas größer, kleiner Fell-Tupfer oben auf dem Kopf, ruhig und verpennt, liebt Fisch.
@@ -98,6 +99,6 @@ Die Figuren sind in allen 5 Videos identisch:
 ## Posting-Tipps für diese 5 Clips
 
 - **Reihenfolge:** 2 → 1 → 3 → 5 → 4. Video 2 hat den stärksten Twist („WHO IS SALMON“) und eignet sich als Einstieg in die Serie.
-- **Ton:** Die Clips haben eigenen, lizenzfreien Ton (synthetisch erzeugt, siehe `render/audio.py`). Für mehr Reichweite kannst du in der App zusätzlich einen Trend-Sound leise darunterlegen (5–15 %). Für bezahlte Kooperationen nur die Commercial Music Library nutzen.
+- **Ton:** Die Clips haben eigene, lizenzfreie Musik und Soundeffekte (synthetisch erzeugt, siehe `render/audio.py`), aber keine Stimmen. Für mehr Reichweite kannst du in der App zusätzlich einen Trend-Sound darunterlegen. Für bezahlte Kooperationen nur die Commercial Music Library nutzen.
 - **KI-Label:** Pflicht ist das Label laut Recherche vor allem bei *realistisch wirkendem* KI-Content. Die Cartoon-Clips sind offensichtlich animiert, aber mit KI-Hilfe entstanden. Im Zweifel das Label setzen, laut TikTok kostet es keine Reichweite. Für die realistischen KI-Versionen aus `ki-prompts.md` das Label **immer** setzen.
 - **Zeiten (aus Deutschland für US-Publikum):** Di–Do 20:00–24:00 Uhr deutscher Zeit, So 15:00 Uhr. Vom 25. 10. bis 1. 11. 2026 ist der Abstand nur 5 statt 6 Stunden.

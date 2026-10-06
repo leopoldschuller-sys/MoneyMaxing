@@ -9,14 +9,14 @@ makeSkit({
   name: '04_getting_ready',
   duration: 28.8,
   setup(S) {
-    S.music(0, 3.9, 'silly', { gain: 0.4 });
+    S.music(0, 3.9, 'silly', { gain: 0.5 });
     S.say('him', 0.3, 'ok, getting ready', { dur: 0.95, hold: 0.2 });
     S.sfx(1.35, 'shake', { dur: 1.05 });
     S.say('him', 2.55, 'done 😎', { mood: 'excited', dur: 0.55, hold: 0.7 });
     S.sfx(2.55, 'sparkle', { gain: 0.6 });
     S.sfx(2.9, 'ding');
     S.sfx(3.95, 'whoosh');
-    S.music(4.0, 14.5, 'cozy', { gain: 0.38 });
+    S.music(4.0, 14.5, 'cozy', { gain: 0.5 });
     for (let tt = 4.5; tt < 6.6; tt += 0.42) S.sfx(tt, 'scroll', { gain: 1.4 });
     S.sfx(4.6, 'sparkle', { gain: 0.5 });
     S.say('her', 6.9, 'which one? 🎀', { mood: 'sweet', dur: 0.95, hold: 0.9 });
@@ -39,7 +39,9 @@ makeSkit({
     S.sfx(22.8, 'pop');
     S.say('her', 23.4, "why aren't you ready?? we're gonna be late 😤", { mood: 'angry', dur: 2.1, hold: 0.6 });
     S.sfx(25.9, 'sting', { kind: 'blink' });
-    S.music(25.9, 28.8, 'sad', { gain: 0.4 });
+    S.music(21.0, 23.3, 'glam', { gain: 0.5 });
+    S.music(23.35, 25.85, 'tense', { gain: 0.5 });
+    S.music(25.9, 28.8, 'sad', { gain: 0.5 });
   },
 
   draw(ctx, t, S) {

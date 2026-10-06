@@ -2,10 +2,9 @@
 """Synthesises a skit's soundtrack from build/<skit>.cues.json -> build/<skit>.wav.
 
 Everything is generated procedurally (no samples, no licensing issues):
-  * bear "babble" voices: formant-synthesised gibberish syllables (Animal-Crossing style),
-    timed exactly like the mouth animation in the renderer,
   * cartoon sound effects,
-  * short original music loops in a few moods.
+  * short original music loops in a few moods, laid out as a continuous bed.
+The bears have no voices: dialogue is shown as speech bubbles only.
 Usage: python3 render/audio.py <skit>
 """
 import json
@@ -117,15 +116,10 @@ def reverb(x, mix=0.25, size=1.0):
     return x * (1 - mix) + wet * mix
 
 
-# ---------------------------------------------------------------- voices
+# ---------------------------------------------------------------- vocal tract (used by the snore)
 FORMANTS = {
-    'a': ((800, 90, 1.0), (1250, 110, 0.55), (2600, 160, 0.25)),
-    'e': ((470, 70, 1.0), (2000, 120, 0.45), (2650, 170, 0.25)),
-    'i': ((320, 60, 1.0), (2300, 130, 0.4), (3000, 180, 0.22)),
     'o': ((520, 80, 1.0), (880, 100, 0.55), (2600, 160, 0.2)),
-    'u': ((360, 60, 1.0), (760, 90, 0.5), (2450, 150, 0.18)),
 }
-VOICE_SHIFT = {'him': 1.1, 'her': 1.28}
 
 
 def glottal(f, n, tilt=1.25, breath=0.0):
@@ -146,55 +140,6 @@ def formant_filter(src, vowel, shift):
         b, a = iirpeak(fc, fc / (bw * shift), fs=SR)
         out += lfilter(b, a, src) * g
     return out
-
-
-def syllable(s):
-    d, f0, mood, who = s['d'], s['f0'], s['mood'], s['who']
-    n = int(d * SR)
-    t = np.arange(n) / SR
-    glide = {'angry': -0.12, 'shout': -0.1, 'sad': -0.08, 'sleepy': -0.1, 'excited': 0.08}.get(mood, -0.03)
-    f = f0 * (1 + glide * t / max(d, 1e-3)) * (1 + 0.015 * np.sin(2 * np.pi * 6 * t))
-    tilt = {'angry': 0.95, 'shout': 0.85, 'whisper': 1.3, 'sleepy': 1.5, 'sweet': 1.35}.get(mood, 1.2)
-    breath = {'sleepy': 0.25, 'whisper': 1.2, 'sad': 0.12}.get(mood, 0.04)
-    src = glottal(f, n, tilt, breath)
-    if mood == 'whisper':
-        src = bandpass(noise(n), 300, 7000)
-    v = formant_filter(src, s['vowel'], VOICE_SHIFT[who])
-    v /= (np.max(np.abs(v)) + 1e-9)
-    if mood in ('angry', 'shout'):
-        v = np.tanh(v * 2.2) / np.tanh(2.2)
-    e = env_adsr(n, a=0.008, d=0.03, s=0.85, r=min(0.035, d * 0.4))
-    out = v * e
-    c = s.get('cons')
-    if c:
-        cn = int(0.018 * SR)
-        if c == 's':
-            burst = highpass(noise(cn), 4500) * exp_decay(cn, 0.012) * 0.5
-        elif c in 'tkpdb':
-            lo = {'t': 3000, 'k': 1800, 'p': 600, 'd': 2500, 'b': 400}[c]
-            burst = bandpass(noise(cn), lo, lo * 2.2) * exp_decay(cn, 0.004) * 0.9
-        elif c in 'mnl':
-            tt = np.arange(cn) / SR
-            burst = np.sin(2 * np.pi * f0 * tt) * 0.35 * np.linspace(0.2, 1, cn)
-        else:  # h
-            burst = bandpass(noise(cn), 800, 5000) * 0.25 * np.linspace(1, 0.3, cn)
-        out = np.concatenate([burst, out])
-    return out * s['amp'] * 0.55
-
-
-def yawn(who):
-    d = 0.85
-    n = int(d * SR)
-    t = np.arange(n) / SR
-    f0 = (300 if who == 'her' else 230) * np.interp(t, [0, 0.25, 0.85], [1.0, 1.15, 0.45])
-    src = glottal(f0, n, 1.4, 0.1)
-    # vowel morph a -> o -> u by crossfading filtered versions
-    a = formant_filter(src, 'a', VOICE_SHIFT[who])
-    u = formant_filter(src, 'o', VOICE_SHIFT[who])
-    k = np.clip(t / d, 0, 1)
-    v = a * (1 - k) + u * k
-    v /= np.max(np.abs(v)) + 1e-9
-    return v * env_adsr(n, 0.08, 0.1, 0.9, 0.25) * 0.45
 
 
 # ---------------------------------------------------------------- sfx
@@ -379,10 +324,6 @@ def sfx_snore(c):
     return snore(c.get('voice', 'him'))
 
 
-def sfx_yawn(c):
-    return yawn(c.get('voice', 'him'))
-
-
 def sfx_thud(c):
     n = int(0.35 * SR)
     t = np.arange(n) / SR
@@ -467,24 +408,6 @@ def sfx_kiss(c):
     x = np.sin(2 * np.pi * np.cumsum(700 + 900 * t / 0.18) / SR) * env_adsr(n, 0.002, 0.03, 0.4, 0.08)
     x += bandpass(noise(n), 1500, 6000) * exp_decay(n, 0.01) * 0.6
     return x * 0.4
-
-
-def sfx_hmph(c):
-    who = c.get('voice', 'her')
-    s = {'who': who, 'd': 0.32, 'f0': 300 if who == 'her' else 170, 'vowel': 'u', 'cons': 'h', 'amp': 1.2, 'mood': 'angry'}
-    return syllable(s)
-
-
-def sfx_sigh(c):
-    who = c.get('voice', 'her')
-    d = 1.1
-    n = int(d * SR)
-    t = np.arange(n) / SR
-    f0 = (310 if who == 'her' else 180) * np.interp(t, [0, 1.1], [1.15, 0.7])
-    src = glottal(f0, n, 1.6, 1.0)
-    v = formant_filter(src, 'a', VOICE_SHIFT[who])
-    v /= np.max(np.abs(v)) + 1e-9
-    return v * env_adsr(n, 0.15, 0.2, 0.8, 0.5) * 0.5 * c.get('gain', 1)
 
 
 def sfx_gasp(c):
@@ -823,15 +746,8 @@ def main(skit):
     cues = json.loads((ROOT / 'build' / f'{skit}.cues.json').read_text())
     dur = cues['duration']
     n = int(SR * (dur + 0.2))
-    voice_l, voice_r = np.zeros(n), np.zeros(n)
     fx = np.zeros(n)
     mus = np.zeros(n)
-    for s in cues['voices']:
-        v = syllable(s)
-        pan = -0.2 if s['who'] == 'him' else 0.2
-        v = fade_tail(v, 4)
-        add(voice_l, s['t'], v, 1 - max(0, pan))
-        add(voice_r, s['t'], v, 1 + min(0, pan))
     for c in cues['sfx']:
         fn = SFX.get(c['name'])
         if fn is None:
@@ -840,16 +756,9 @@ def main(skit):
         add(fx, c['t'], fade_tail(fn(c), 10), c.get('gain', 1.0))
     for m in cues['music']:
         add(mus, m['t0'], render_music(m))
-    # duck music under dialogue
-    vabs = np.abs(voice_l + voice_r)
-    win = int(0.08 * SR)
-    venv = np.convolve(vabs, np.ones(win) / win, mode='same')
-    duck = 1 - 0.55 * np.clip(venv / (venv.max() + 1e-9) * 4, 0, 1)
-    mus *= duck
     fx = reverb(fx, mix=0.12, size=0.8)
-    left = voice_l * 1.0 + fx * 0.8 + mus * 0.75
-    right = voice_r * 1.0 + fx * 0.8 + mus * 0.75
-    stereo = np.stack([left, right], axis=1)
+    mix = fx * 1.0 + mus * 0.7
+    stereo = np.stack([mix, mix], axis=1)
     # loudness: normalise RMS of the loud parts, then soft-limit
     rms = np.sqrt(np.mean(stereo ** 2) + 1e-12)
     stereo *= 0.16 / rms

@@ -1,5 +1,5 @@
 // Core helpers: math, easing, keyframes, seeded randomness, camera and the Skit timeline
-// (dialogue lines, sound cues, music cues). Everything is a pure function of time t so any
+// (dialogue lines with mouth timing, sound cues, music cues). Everything is a pure function of time t so any
 // frame can be rendered on its own.
 'use strict';
 
@@ -234,14 +234,14 @@ class Skit {
     this.lines.sort((a, b) => a.t - b.t);
   }
 
-  // Speech line with babble voice + bubble. o: {dur, mood, hold, at:[x,y], silent, style}
+  // Speech line: bubble + mouth movement (no voice audio). o: {dur, mood, hold, at:[x,y], silent, style}
   say(who, t, text, o = {}) {
     const letters = text.replace(/[^\p{L}\p{N}]/gu, '').length;
     const mood = o.mood || 'normal';
     const m = MOODS[mood];
     const dur = o.dur || clamp(0.28 + letters * 0.055 / m.rate, 0.45, 2.8);
     const line = { kind: 'say', who, t, text, dur, end: t + dur, hold: o.hold == null ? 0.75 : o.hold, mood, o };
-    if (!o.silent) this._babble(line);
+    if (!o.silent) this._mouthSyllables(line);
     this.lines.push(line);
     return line;
   }
@@ -254,7 +254,8 @@ class Skit {
     return line;
   }
 
-  _babble(line) {
+  // Syllable timing for the talking animation; mood changes speed and how wide the mouth opens.
+  _mouthSyllables(line) {
     const v = VOICE[line.who];
     const m = MOODS[line.mood];
     const rate = v.rate * m.rate;
@@ -286,7 +287,7 @@ class Skit {
   sfx(t, name, o = {}) { this.sfxList.push({ t, name, ...o }); }
   music(t0, t1, mood, o = {}) { this.musicList.push({ t0, t1, mood, ...o }); }
 
-  // Mouth openness 0..1 for a speaker at time t (from their babble syllables).
+  // Mouth openness 0..1 for a speaker at time t (from their syllable timing).
   mouth(who, t) {
     let v = 0;
     for (const l of this.lines) {
@@ -304,7 +305,6 @@ class Skit {
     return {
       name: this.name,
       duration: this.duration,
-      voices: this.syll,
       sfx: this.sfxList,
       music: this.musicList,
     };
