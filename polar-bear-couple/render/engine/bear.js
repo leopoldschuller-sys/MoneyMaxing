@@ -49,17 +49,20 @@ function bearState(who, o = {}) {
     blush: CUTE ? (who === 'her' ? 1 : 0.7) : (who === 'her' ? 0.75 : 0.35), blushLines: 0,
     sweat: 0, anger: 0, tears: 0, bags: 0, steam: 0, snot: 0, shiver: 0,
     cheekPuff: 0, crumbs: 0, fishTail: 0, frost: 0, melt: 0, cobweb: 0, redFace: 0,
+    wet: 0, puff: 0, foam: 0, foamCol: null, turban: 0, iceBlock: 0, reachLw: 1, reachRw: 1, reachArcL: 0, reachArcR: 0, redNose: 0,
     hideBody: false, reachL: null, reachR: null,
   }, o);
 }
 
 // ---------- shape paths ----------
-function headShape(ctx, cx, cy, rx, ry, fluff, t) {
-  const N = 180;
+function headShape(ctx, cx, cy, rx, ry, fluff, t, puff = 0) {
+  const N = puff > 0 ? 360 : 180;
   ctx.beginPath();
   for (let i = 0; i <= N; i++) {
     const a = (i / N) * TAU;
     let r = 1;
+    // freshly shaken dry: round fluffy scallops all the way around
+    if (puff > 0) r += puff * (0.05 + 0.075 * Math.pow(Math.abs(Math.sin(a * 11 + 0.4)), 0.7));
     // fur tufts on the lower cheeks (canvas angles: 0 = right, PI/2 = down)
     for (const [a0, a1] of [[0.06 * Math.PI, 0.36 * Math.PI], [0.64 * Math.PI, 0.94 * Math.PI]]) {
       if (a > a0 && a < a1) {
@@ -75,13 +78,14 @@ function headShape(ctx, cx, cy, rx, ry, fluff, t) {
   ctx.closePath();
 }
 
-function bodyShape(ctx, cx, cy, rx, ry) {
-  const N = 120;
+function bodyShape(ctx, cx, cy, rx, ry, puff = 0) {
+  const N = puff > 0 ? 300 : 120;
   ctx.beginPath();
   for (let i = 0; i <= N; i++) {
     const a = (i / N) * TAU;
-    const x = cx + Math.cos(a) * rx * (1 + 0.1 * Math.sin(a));
-    const y = cy + Math.sin(a) * ry;
+    const p = puff > 0 ? 1 + puff * (0.06 + 0.08 * Math.pow(Math.abs(Math.sin(a * 9 + 1.1)), 0.7)) : 1;
+    const x = cx + Math.cos(a) * rx * (1 + 0.1 * Math.sin(a)) * p;
+    const y = cy + Math.sin(a) * ry * p;
     if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
   }
   ctx.closePath();
@@ -173,9 +177,46 @@ function armPoints(side, a, bend, s, foreLen) {
   return [[sx, sy], el, paw];
 }
 
+// Exact mapping between a bear's local rig coordinates and world coordinates
+// (same transform chain as drawBear: position, hop, scale/flip, lean, squash/melt, body bob).
+function bearSquash(b) { return b.squash * (1 - 0.6 * (b.melt || 0)); }
+function sqOf(b) { return bearSquash(b) * b.s; }
+function bearBodyBob(b) { return b.bob + (b.walkAmt ? Math.abs(Math.sin(b.walk)) * 10 * b.walkAmt : 0); }
+function localToWorld(b, p) {
+  const sq = bearSquash(b);
+  let x = p[0] / Math.sqrt(sq), y = (p[1] - bearBodyBob(b)) * sq;
+  const a = b.lean * b.flip, c = Math.cos(a), s = Math.sin(a);
+  [x, y] = [x * c - y * s, x * s + y * c];
+  return [b.x + x * b.s * b.flip, b.y - b.hop + y * b.s];
+}
+function worldToLocal(b, w) {
+  const sq = bearSquash(b);
+  let x = (w[0] - b.x) / (b.s * b.flip), y = (w[1] - b.y + b.hop) / b.s;
+  const a = -b.lean * b.flip, c = Math.cos(a), s = Math.sin(a);
+  [x, y] = [x * c - y * s, x * s + y * c];
+  return [x * Math.sqrt(sq), y / sq + bearBodyBob(b)];
+}
+// Cute look: arm that blends from its normal pose (w = 0) to reaching a world point (w = 1).
+function cuteArmPoints(b, side) {
+  const p = ARM_PRESETS[b.arms] || {};
+  const a = side < 0 ? (p.aL ?? b.aL) : (p.aR ?? b.aR);
+  const bend = side < 0 ? (p.bL ?? b.bL) : (p.bR ?? b.bR);
+  const pts = armPoints(side, a, bend, b.s, b.foreLen);
+  const reach = side < 0 ? b.reachL : b.reachR;
+  const w = reach ? clamp(side < 0 ? (b.reachLw ?? 1) : (b.reachRw ?? 1)) : 0;
+  if (w <= 0) return pts;
+  const tl = worldToLocal(b, reach);
+  const tgt = [lerp(pts[2][0], tl[0], w), lerp(pts[2][1], tl[1], w)];
+  const arc = (side < 0 ? b.reachArcL : b.reachArcR) || 0;
+  const straight = [lerp(pts[0][0], tgt[0], 0.5), lerp(pts[0][1], tgt[1], 0.5) + 12 + arc / sqOf(b)];
+  return [pts[0], [lerp(pts[1][0], straight[0], w), lerp(pts[1][1], straight[1], w)], tgt];
+}
+// World position of a paw in the cute look (follows reaching too).
+function pawWorldCute(b, side) { return localToWorld(b, cuteArmPoints(b, side)[2]); }
+
 function drawArm(ctx, b, side) {
   const reach = side < 0 ? b.reachL : b.reachR;
-  if (reach) {
+  if (reach && !CUTE) {
     // stretchy cartoon arm straight to a world-space target
     const lx = (reach[0] - b.x) / (b.s * b.flip);
     const ly = (reach[1] - b.y) / b.s + b.bob;
@@ -188,7 +229,7 @@ function drawArm(ctx, b, side) {
   const p = ARM_PRESETS[b.arms] || {};
   const a = side < 0 ? (p.aL ?? b.aL) : (p.aR ?? b.aR);
   const bend = side < 0 ? (p.bL ?? b.bL) : (p.bR ?? b.bR);
-  const pts = armPoints(side, a, bend, b.s, b.foreLen);
+  const pts = CUTE ? cuteArmPoints(b, side) : armPoints(side, a, bend, b.s, b.foreLen);
   const th = (b.who === 'her' ? 52 : 57) * (CUTE ? 0.92 : 1);
   outlinedStroke(ctx, pts, th, PAL.fur, PAL.out, LW, CUTE);
   if (CUTE) {
@@ -248,8 +289,10 @@ function drawBody(ctx, b, t) {
     }
   }
   const cy = (b.pose === 'sit' ? -200 : -192) + (CUTE ? 18 : 0);
-  const bodyPath = () => bodyShape(ctx, 0, cy, rx, b.pose === 'sit' ? ry * 0.95 : ry);
+  const wk2 = 1 - 0.07 * (b.wet || 0);
+  const bodyPath = () => bodyShape(ctx, 0, cy, rx * wk2, (b.pose === 'sit' ? ry * 0.95 : ry), b.puff || 0);
   furFill(ctx, bodyPath, [-16, -18], b.frost, [-rx * 0.3, cy - ry * 0.45, ry * 1.7]);
+  if (b.wet > 0) wetTint(ctx, bodyPath, b.wet);
   // belly
   ellipse(ctx, 0, cy + 30, rx * 0.62, ry * 0.62);
   ctx.fillStyle = 'rgba(255,255,255,0.9)';
@@ -265,8 +308,9 @@ function headGeom(b) {
 
 function drawEars(ctx, b, hx, hy, rx, ry, look) {
   for (const side of [-1, 1]) {
-    const ex = hx + side * rx * 0.66 + look * rx * 0.06;
-    const ey = hy - ry * (CUTE ? 0.78 : 0.8);
+    const pf = b.puff || 0;
+    const ex = hx + side * rx * (0.66 + 0.07 * pf) + look * rx * 0.06;
+    const ey = hy - ry * ((CUTE ? 0.78 : 0.8) + 0.12 * pf);
     ellipse(ctx, ex, ey, rx * (CUTE ? 0.25 : 0.27), rx * (CUTE ? 0.25 : 0.26));
     fillStroke(ctx, PAL.fur, PAL.out, LW);
     ellipse(ctx, ex + side * 2, ey + 3, rx * 0.15, rx * 0.14);
@@ -617,12 +661,15 @@ function drawHead(ctx, b, t, hx, hy) {
   if (!her) {
     ctx.save();
     ctx.translate(hx, hy - ry);
-    ctx.rotate(b.tuftSwing || 0);
+    ctx.rotate((b.tuftSwing || 0) + 0.55 * (b.wet || 0));
     ctx.translate(-hx, -(hy - ry));
     drawTuft(ctx, hx + look * 14, hy, ry);
     ctx.restore();
   }
-  furFill(ctx, () => headShape(ctx, hx, hy, rx, ry, 1, t), [-14, -16], b.frost, [hx - rx * 0.32, hy - ry * 0.42, Math.max(rx, ry) * 1.6]);
+  const hrx = rx * (1 - 0.05 * (b.wet || 0));
+  const headPath = () => headShape(ctx, hx, hy, hrx, ry, 1 - (b.wet || 0), t, b.puff || 0);
+  furFill(ctx, headPath, [-14, -16], b.frost, [hx - rx * 0.32, hy - ry * 0.42, Math.max(rx, ry) * 1.6]);
+  if (b.wet > 0) wetTint(ctx, headPath, b.wet);
   if (b.redFace > 0) {
     ctx.save();
     headShape(ctx, hx, hy, rx, ry, 1, t); ctx.clip();
@@ -722,6 +769,19 @@ function drawHead(ctx, b, t, hx, hy) {
   ctx.closePath();
   ctx.fillStyle = PAL.nose;
   ctx.fill();
+  if (b.redNose > 0) {
+    // sick: red, slightly swollen nose with a pink glow around it
+    const g = ctx.createRadialGradient(nx, ny, 4, nx, ny, 46);
+    g.addColorStop(0, `rgba(255,110,130,${0.55 * b.redNose})`); g.addColorStop(1, 'rgba(255,110,130,0)');
+    ctx.fillStyle = g; ellipse(ctx, nx, ny, 46, 38); ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(nx - 26, ny - 9);
+    ctx.quadraticCurveTo(nx, ny - 23, nx + 26, ny - 9);
+    ctx.quadraticCurveTo(nx + 24, ny + 10, nx, ny + 18);
+    ctx.quadraticCurveTo(nx - 24, ny + 10, nx - 26, ny - 9);
+    ctx.closePath();
+    ctx.fillStyle = `rgba(232,72,98,${b.redNose})`; ctx.fill();
+  }
   ellipse(ctx, nx - 7, ny - 7, 7, 4, -0.2);
   ctx.fillStyle = 'rgba(255,255,255,0.75)';
   ctx.fill();
@@ -767,8 +827,12 @@ function drawHead(ctx, b, t, hx, hy) {
     ctx.restore();
   }
 
+  // shampoo foam on top of the head
+  if (b.foam > 0) drawFoam(ctx, hx + look * 8, hy, rx, ry, b.foam, t, b.foamCol);
+  // towel turban after the shower (hides the bow)
+  if (b.turban > 0) drawTurban(ctx, hx + look * 6, hy, rx, ry, b.turban);
   // pink bow
-  if (her) drawBow(ctx, hx + rx * 0.5 + look * 10, hy - ry * 0.84, 0.92, 0.32 + (b.bowSwing || 0));
+  if (her && b.turban < 0.5) drawBow(ctx, hx + rx * 0.5 + look * 10, hy - ry * 0.84 - (b.foam > 0 ? 26 * b.foam : 0), 0.92, 0.32 + (b.bowSwing || 0));
 
   // frost: icicles hanging from the chin
   if (b.frost > 0.3) {
@@ -853,6 +917,148 @@ function drawHead(ctx, b, t, hx, hy) {
   }
 }
 
+// Wet fur: cooler, slightly darker tint + a few clumped strands.
+function wetTint(ctx, pathFn, amt) {
+  ctx.save();
+  pathFn(); ctx.clip();
+  ctx.fillStyle = `rgba(150,175,215,${0.26 * amt})`;
+  ctx.fillRect(-600, -1200, 1200, 1400);
+  ctx.restore();
+}
+
+// Cloud of shampoo foam sitting on top of the head.
+function drawFoam(ctx, hx, hy, rx, ry, amt, t, col) {
+  const r = mulberry32(5);
+  const blobs = [];
+  for (let i = 0; i < 8; i++) {
+    const k = i / 7;
+    const a = Math.PI * (1.1 + 0.8 * k);
+    const rr = (40 + r() * 20) * amt * (0.8 + 0.25 * Math.sin(Math.PI * k));
+    blobs.push([hx + Math.cos(a) * rx * 0.8, hy + Math.sin(a) * ry * 0.88 - 12 + Math.sin(t * 3 + i) * 2, rr]);
+  }
+  blobs.push([hx - 12, hy - ry - 18 * amt, 50 * amt], [hx + 40, hy - ry - 6 * amt, 40 * amt]);
+  ctx.save();
+  // outline pass, then fill pass: one clean cloud silhouette
+  ctx.lineWidth = 9; ctx.strokeStyle = 'rgba(91,74,96,0.6)';
+  for (const [x, y, rr] of blobs) { ellipse(ctx, x, y, rr, rr * 0.9); ctx.stroke(); }
+  ctx.fillStyle = col || '#FFFFFF';
+  for (const [x, y, rr] of blobs) { ellipse(ctx, x, y, rr, rr * 0.9); ctx.fill(); }
+  ctx.fillStyle = 'rgba(255,255,255,0.9)';
+  for (const [x, y, rr] of blobs) { ellipse(ctx, x - rr * 0.3, y - rr * 0.35, rr * 0.22, rr * 0.16, -0.5); ctx.fill(); }
+  // little bubbles rising off the foam
+  for (let i = 0; i < 5; i++) {
+    const k = (t * 0.7 + i / 5) % 1;
+    const bx = hx + (i - 2) * 46 + Math.sin(k * 6 + i) * 12, by = hy - ry - 30 - k * 170;
+    ctx.globalAlpha = amt * Math.sin(Math.PI * k);
+    ellipse(ctx, bx, by, 9 + (i % 3) * 4, 9 + (i % 3) * 4);
+    ctx.fillStyle = 'rgba(220,240,255,0.5)'; ctx.fill();
+    ctx.strokeStyle = 'rgba(120,150,200,0.8)'; ctx.lineWidth = 3; ctx.stroke();
+    ellipse(ctx, bx - 3, by - 3, 3, 2); ctx.fillStyle = '#fff'; ctx.fill();
+  }
+  ctx.restore();
+}
+
+// Pink towel wrapped around the head like a turban: a soft dome, a twisted band across it
+// and the tucked-in end sticking up at the back.
+function drawTurban(ctx, hx, hy, rx, ry, amt) {
+  ctx.save();
+  ctx.translate(hx, hy - ry * 0.5);
+  const s = ease.outBack(clamp(amt));
+  ctx.scale(s, s);
+  const col = '#FFB8CC', dark = '#EE8FB0', light = '#FFDCE7';
+  // tucked end (behind the dome)
+  ctx.beginPath();
+  ctx.moveTo(rx * 0.25, -ry * 0.9);
+  ctx.bezierCurveTo(rx * 0.4, -ry * 1.45, rx * 0.95, -ry * 1.4, rx * 0.98, -ry * 1.05);
+  ctx.bezierCurveTo(rx * 0.9, -ry * 0.95, rx * 0.75, -ry * 0.8, rx * 0.7, -ry * 0.6);
+  ctx.closePath();
+  fillStroke(ctx, col, PAL.out, LW);
+  ctx.strokeStyle = dark; ctx.lineWidth = 5; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(rx * 0.45, -ry * 0.95); ctx.quadraticCurveTo(rx * 0.6, -ry * 1.25, rx * 0.86, -ry * 1.12); ctx.stroke();
+  // dome
+  const dome = () => {
+    ctx.beginPath();
+    ctx.moveTo(-rx * 1.05, ry * 0.22);
+    ctx.bezierCurveTo(-rx * 1.25, -ry * 0.75, -rx * 0.55, -ry * 1.18, rx * 0.12, -ry * 1.12);
+    ctx.bezierCurveTo(rx * 0.95, -ry * 1.06, rx * 1.28, -ry * 0.55, rx * 1.05, ry * 0.22);
+    ctx.bezierCurveTo(rx * 0.55, ry * 0.04, -rx * 0.55, ry * 0.04, -rx * 1.05, ry * 0.22);
+    ctx.closePath();
+  };
+  dome();
+  fillStroke(ctx, col, PAL.out, LW);
+  ctx.save();
+  dome(); ctx.clip();
+  ctx.fillStyle = light;
+  ellipse(ctx, -rx * 0.42, -ry * 0.72, rx * 0.42, ry * 0.2, -0.35); ctx.fill();
+  // twisted band crossing the dome: overlapping lobes read as a twisted towel
+  for (let i = 0; i < 5; i++) {
+    const k = i / 4;
+    const x = lerp(-rx * 0.95, rx * 0.55, k), y = lerp(ry * 0.02, -ry * 0.95, k) + Math.sin(k * Math.PI) * -ry * 0.12;
+    ctx.save(); ctx.translate(x, y); ctx.rotate(-0.75);
+    ellipse(ctx, 0, 0, rx * 0.24, ry * 0.17);
+    fillStroke(ctx, i % 2 ? col : '#FFC6D6', PAL.out, 4);
+    ctx.beginPath(); ctx.moveTo(-rx * 0.12, -ry * 0.04); ctx.quadraticCurveTo(0, ry * 0.06, rx * 0.12, -ry * 0.04);
+    ctx.strokeStyle = dark; ctx.lineWidth = 3.5; ctx.stroke();
+    ctx.restore();
+  }
+  // terry-cloth texture: tiny dots
+  ctx.fillStyle = 'rgba(238,143,176,0.45)';
+  const r = mulberry32(8);
+  for (let i = 0; i < 40; i++) { ellipse(ctx, (r() - 0.5) * rx * 2.2, -r() * ry * 1.2 + ry * 0.1, 2.5, 2.5); ctx.fill(); }
+  ctx.restore();
+  // band edge over the forehead
+  ctx.beginPath();
+  ctx.moveTo(-rx * 1.05, ry * 0.22);
+  ctx.bezierCurveTo(-rx * 0.55, ry * 0.04, rx * 0.55, ry * 0.04, rx * 1.05, ry * 0.22);
+  ctx.strokeStyle = PAL.out; ctx.lineWidth = LW; ctx.stroke();
+  ctx.restore();
+}
+
+// Cartoon freeze: the bear stuck in a clear block of ice (pops in with a little overshoot).
+function drawIceBlock(ctx, b, t, hy) {
+  const g = headGeom(b);
+  const a = clamp(b.iceBlock);
+  const top = hy - g.ry - 95, bottom = 20, w = g.rx + 70;
+  const cy = (top + bottom) / 2;
+  const s = ease.outBack(a);
+  ctx.save();
+  ctx.translate(0, cy); ctx.scale(s, s); ctx.translate(0, -cy);
+  rrect(ctx, -w, top, w * 2, bottom - top, 46);
+  ctx.fillStyle = 'rgba(185,228,255,0.45)'; ctx.fill();
+  ctx.strokeStyle = '#78B4E4'; ctx.lineWidth = 8; ctx.stroke();
+  ctx.save();
+  rrect(ctx, -w, top, w * 2, bottom - top, 46); ctx.clip();
+  // inner bevel + highlights
+  rrect(ctx, -w + 16, top + 16, w * 2 - 32, bottom - top - 32, 34);
+  ctx.strokeStyle = 'rgba(255,255,255,0.55)'; ctx.lineWidth = 6; ctx.stroke();
+  ctx.strokeStyle = 'rgba(255,255,255,0.85)'; ctx.lineCap = 'round';
+  ctx.lineWidth = 16; ctx.beginPath(); ctx.moveTo(-w + 46, top + 70); ctx.lineTo(-w + 46, top + 220); ctx.stroke();
+  ctx.lineWidth = 9; ctx.beginPath(); ctx.moveTo(-w + 80, top + 52); ctx.lineTo(-w + 150, top + 40); ctx.stroke();
+  ctx.lineWidth = 8; ctx.beginPath(); ctx.moveTo(w - 46, bottom - 150); ctx.lineTo(w - 46, bottom - 70); ctx.stroke();
+  ctx.restore();
+  sparkle(ctx, w - 30, top + 30, 20, t * 2, '#FFFFFF');
+  sparkle(ctx, -w + 34, bottom - 40, 14, -t * 2, '#FFFFFF');
+  ctx.restore();
+}
+
+// Drops running off wet fur.
+function drawDrips(ctx, b, t, hy) {
+  ctx.save();
+  ctx.globalAlpha = clamp(b.wet * 1.5);
+  const r = mulberry32(b.who === 'her' ? 17 : 9);
+  for (let i = 0; i < 6; i++) {
+    const x0 = (r() - 0.5) * 300, y0 = i < 3 ? hy + 120 + r() * 30 : -120 - r() * 120;
+    const sp = 0.9 + r() * 0.6, ph = r();
+    const k = (t * sp + ph) % 1;
+    const y = y0 + k * k * 160;
+    ctx.globalAlpha = clamp(b.wet * 1.5) * (1 - k);
+    ctx.beginPath();
+    ctx.moveTo(x0, y - 16); ctx.quadraticCurveTo(x0 + 9, y + 2, x0, y + 6); ctx.quadraticCurveTo(x0 - 9, y + 2, x0, y - 16);
+    fillStroke(ctx, PAL.sweat, '#4B8FC9', 3);
+  }
+  ctx.restore();
+}
+
 // ---------- melting puddle ----------
 function drawPuddle(ctx, b, t) {
   if (b.melt <= 0) return;
@@ -915,6 +1121,8 @@ function drawBear(ctx, b, t) {
     }
   }
   drawHead(ctx, b, t, 0, hy);
+  if (b.wet > 0) drawDrips(ctx, b, t, hy);
+  if (b.iceBlock > 0) drawIceBlock(ctx, b, t, hy);
   if (b.arms === 'face') {
     const g = headGeom(b);
     for (const side of [-1, 1]) drawPaw(ctx, side * g.rx * 0.36, hy - g.ry * 0.12 + 4, 34, true, side * 0.2);

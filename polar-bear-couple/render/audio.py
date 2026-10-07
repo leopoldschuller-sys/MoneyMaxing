@@ -531,7 +531,7 @@ def sfx_shutter(c):
 def sfx_softpop(c):
     n = int(0.09 * SR)
     t = np.arange(n) / SR
-    f = 640 * np.exp(-t * 14) + 380
+    f = (640 * np.exp(-t * 14) + 380) * c.get('pitch', 1.0)
     return np.sin(2 * np.pi * np.cumsum(f) / SR) * env_adsr(n, 0.004, 0.02, 0.6, 0.04) * 0.3
 
 
@@ -539,6 +539,168 @@ def sfx_chime(c):
     out = np.zeros(int(1.2 * SR))
     for i, m in enumerate(c.get('notes', (79, 84))):
         add(out, i * 0.09, bell(midi(m), 0.9, 0.16))
+    return out
+
+
+def fades(n, fin=0.1, fout=0.2):
+    i = np.arange(n)
+    return np.minimum(1, np.minimum(i / max(1, fin * SR), (n - i) / max(1, fout * SR)))
+
+
+def sfx_shower(c):
+    """Soft running water: filtered noise with a slow shimmer and a few droplet plinks."""
+    d = c.get('dur', 2.0)
+    n = int(d * SR)
+    t = np.arange(n) / SR
+    x = lowpass(bandpass(noise(n), 300, 7000), 4500) * 0.8 + highpass(noise(n), 6500) * 0.08
+    x *= 0.86 + 0.14 * np.sin(2 * np.pi * 0.7 * t + 1) * np.sin(2 * np.pi * 2.3 * t)
+    for _ in range(int(d * 8)):
+        m = int(0.03 * SR)
+        tt = np.arange(m) / SR
+        f = 1700 + RNG.random() * 2200
+        drop = np.sin(2 * np.pi * np.cumsum(f * (1 + 0.6 * tt / 0.03)) / SR) * exp_decay(m, 0.006)
+        add(x, RNG.random() * max(0.01, d - 0.05), drop, 0.1)
+    return x * fades(n, 0.15, 0.25) * 0.3
+
+
+def sfx_squirt(c):
+    n = int(0.3 * SR)
+    t = np.arange(n) / SR
+    x = sweep_bandpass(noise(n), lambda k: 2600 - 1800 * k, 1.6, 1024) * np.sin(np.pi * np.linspace(0, 1, n)) ** 0.8
+    blub = np.sin(2 * np.pi * np.cumsum(260 + 220 * np.exp(-t * 20)) / SR) * exp_decay(n, 0.05) * 0.5
+    return (x * 0.8 + blub) * 0.45
+
+
+def sfx_scrub(c):
+    d = c.get('dur', 1.0)
+    n = int(d * SR)
+    t = np.arange(n) / SR
+    out = bandpass(noise(n), 1200, 6000) * np.abs(np.sin(2 * np.pi * 4.5 * t)) ** 1.5 * 0.4
+    for _ in range(int(d * 25)):
+        m = int(0.008 * SR)
+        add(out, RNG.random() * max(0.01, d - 0.01), bandpass(noise(m), 3000, 9000) * exp_decay(m, 0.002), 0.22)
+    return out * fades(n, 0.05, 0.1) * 0.6
+
+
+def sfx_splash(c):
+    n = int(0.6 * SR)
+    out = sweep_bandpass(noise(n), lambda k: 3000 - 2000 * k, 1.8, 1024) * exp_decay(n, 0.15) * 0.6
+    for _ in range(10):
+        m = int(0.04 * SR)
+        tt = np.arange(m) / SR
+        f = 1200 + RNG.random() * 2000
+        add(out, RNG.random() * 0.45, np.sin(2 * np.pi * np.cumsum(f * (1 + tt / 0.04)) / SR) * exp_decay(m, 0.008), 0.15)
+    return out * 0.5
+
+
+def sfx_poof(c):
+    n = int(0.45 * SR)
+    t = np.arange(n) / SR
+    x = lowpass(noise(n), 1400) * exp_decay(n, 0.08) * np.minimum(1, t / 0.01)
+    tone = np.sin(2 * np.pi * np.cumsum(420 + 600 * (t / 0.45)) / SR) * env_adsr(n, 0.01, 0.08, 0.3, 0.15) * 0.25
+    return (x * 0.9 + tone) * 0.6
+
+
+def sfx_plop(c):
+    n = int(0.2 * SR)
+    t = np.arange(n) / SR
+    x = np.sin(2 * np.pi * np.cumsum(280 + 900 * (t / 0.2) ** 1.5) / SR) * env_adsr(n, 0.004, 0.05, 0.5, 0.06)
+    x += bandpass(noise(n), 800, 4000) * exp_decay(n, 0.02) * 0.4
+    return x * 0.5
+
+
+def sfx_sizzle(c):
+    d = c.get('dur', 1.0)
+    n = int(d * SR)
+    x = highpass(noise(n), 3000) * 0.2
+    for _ in range(int(d * 60)):
+        m = int(0.004 * SR)
+        add(x, RNG.random() * max(0.01, d - 0.005), bandpass(noise(m), 2000, 9000) * exp_decay(m, 0.001), 0.5)
+    return x * fades(n, 0.08, 0.2) * 0.35
+
+
+def sfx_clockfast(c):
+    d = c.get('dur', 2.0)
+    out = np.zeros(int(d * SR))
+    k, i = 0.0, 0
+    while k < d - 0.03:
+        n = int(0.02 * SR)
+        add(out, k, bandpass(noise(n), 2500 if i % 2 else 3600, 8000) * exp_decay(n, 0.003), 0.5)
+        k += 1 / 11
+        i += 1
+    return out * 0.6
+
+
+def sfx_ice(c):
+    out = np.zeros(int(1.0 * SR))
+    for i in range(6):
+        add(out, i * 0.03, bell(midi(96 - i * 2), 0.5, 0.08))
+    for _ in range(18):
+        m = int(0.006 * SR)
+        add(out, RNG.random() * 0.4, bandpass(noise(m), 4000, 12000) * exp_decay(m, 0.0015), 0.4)
+    n = int(0.3 * SR)
+    add(out, 0, bandpass(noise(n), 2500, 9000) * exp_decay(n, 0.06), 0.35)
+    return out * 0.8
+
+
+def sfx_shatter(c):
+    n = int(0.7 * SR)
+    t = np.arange(n) / SR
+    x = bandpass(noise(n), 2500, 11000) * exp_decay(n, 0.12)
+    for f in (2900, 3700, 4600, 5300):
+        x += np.sin(2 * np.pi * f * t) * exp_decay(n, 0.15) * 0.08
+    return x * 0.45
+
+
+def sfx_ratchet(c):
+    d = c.get('dur', 0.3)
+    out = np.zeros(int((d + 0.05) * SR))
+    k = 0.0
+    while k < d:
+        n = int(0.012 * SR)
+        add(out, k, bandpass(noise(n), 2000, 7000) * exp_decay(n, 0.002), 0.5)
+        k += 0.045
+    return out * 0.7
+
+
+def sfx_beep(c):
+    """Digital thermometer: a few short high beeps."""
+    out = np.zeros(int(0.8 * SR))
+    for i in range(c.get('n', 3)):
+        n = int(0.09 * SR)
+        t = np.arange(n) / SR
+        add(out, i * 0.16, np.sin(2 * np.pi * 2650 * t) * env_adsr(n, 0.008, 0.02, 1, 0.03) * 0.12)
+    return out
+
+
+def sfx_vacuum(c):
+    """Soft vacuum cleaner: low motor hum + airy whoosh, gently wobbling."""
+    d = c.get('dur', 2.0)
+    n = int(d * SR)
+    t = np.arange(n) / SR
+    f = 118 * (1 + 0.01 * np.sin(2 * np.pi * 0.8 * t))
+    ph = 2 * np.pi * np.cumsum(f) / SR
+    hum = sum(np.sin(k * ph) / k for k in range(1, 7))
+    hum = lowpass(hum, 900) * 0.25
+    air = bandpass(noise(n), 500, 3500) * (0.75 + 0.25 * np.sin(2 * np.pi * 1.3 * t)) * 0.35
+    return (hum + air) * fades(n, 0.3, 0.3) * 0.5
+
+
+def sfx_typing(c):
+    d = c.get('dur', 1.0)
+    out = np.zeros(int(d * SR))
+    k = 0.0
+    while k < d - 0.03:
+        n = int(0.018 * SR)
+        add(out, k, bandpass(noise(n), 1800, 6500) * exp_decay(n, 0.003), 0.45 + 0.25 * RNG.random())
+        k += 0.055 + RNG.random() * 0.05
+    return out * 0.6
+
+
+def sfx_handbell(c):
+    out = np.zeros(int(1.2 * SR))
+    for i in range(c.get('n', 4)):
+        add(out, i * 0.17, bell(1568 + (i % 2) * 90, 0.55, 0.13))
     return out
 
 

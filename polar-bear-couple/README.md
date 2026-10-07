@@ -1,6 +1,6 @@
-# 🐻‍❄️ Polar Opposites: 5 Eisbär-Couple-Videos
+# 🐻‍❄️ Polar Opposites: 10 Eisbär-Couple-Videos
 
-Fünf fertige, lustige Couple-Sketche im Stil „him vs me / him vs her“ mit **denselben zwei weißen
+Zehn fertige, lustige Couple-Sketche im Stil „him vs me / him vs her“ mit **denselben zwei weißen
 Eisbären** in jedem Video. Hochformat für TikTok, Reels und Shorts.
 
 | Datei | Hook (Text oben im Video) | Länge |
@@ -13,11 +13,16 @@ Eisbären** in jedem Video. Hochformat für TikTok, Reels und Shorts.
 | `videos/06_what_are_you_thinking.mp4` | when she asks what he's thinking about 💭 (im Bett) | 27,0 s |
 | `videos/07_couple_selfie.mp4` | taking a cute couple selfie 📸 (auf der Couch) | 27,5 s |
 | `videos/08_where_to_eat.mp4` | asking her where she wants to eat 🍣 (am Küchentisch) | 27,5 s |
+| `videos/09_shower_him_vs_her.mp4` | him vs her: taking a shower 🚿 (im Badezimmer, fast ohne Text) | 31,0 s |
+| `videos/10_sick_him_vs_her.mp4` | him vs her: being sick 🤒 (auf der Couch, fast ohne Text) | 25,0 s |
 
-Die Videos 06–08 nutzen den überarbeiteten **„cute“-Look** und eine **flüssigere Animation in 60 fps**:
+Die Videos 06–10 nutzen den überarbeiteten **„cute“-Look** und eine **flüssigere Animation in 60 fps**:
 - größere Köpfe, größere glänzende Augen, weiche Verläufe statt harter Schatten, „Nudel“-Ärmchen mit runden Pfoten,
   runde Schrift (Fredoka, SIL Open Font License), Sprechblasen in Pastellblau/-rosa
-- alles spielt zu Hause: Bett (`drawCozyBedroom`), Couch (`drawCozyRoom`), Küchentisch (`drawCozyKitchen`)
+- alles spielt zu Hause: Bett (`drawCozyBedroom`), Couch (`drawCozyRoom`), Küchentisch (`drawCozyKitchen`),
+  Badezimmer mit Wanne, Regendusche, Temperaturregler und Dampf (`drawCozyBathroom`, `render/engine/sets4.js`)
+- 09 und 10 erzählen fast nur über Bilder: Requisiten wie Flaschen-Regal, Eisblock, Handtuch-Turban, Decken-Burrito,
+  Kühlpack, Fieberthermometer, Staubsauger und Laptop liegen in `sets4.js` und `sets5.js`
 - Animation über `Actor` (`render/engine/anim.js`): jede Bewegung ist ein weich interpolierter Keyframe-Track,
   dazu Atmen, leichtes Wippen, natürliches Blinzeln, Augenbewegungen, Kopfnicken beim Reden,
   Squash & Stretch bei Reaktionen (Überraschung, Hüpfer, Seufzer, Kopfschütteln) und nachschwingende Schleife/Fell.
@@ -26,7 +31,7 @@ Die Videos 06–08 nutzen den überarbeiteten **„cute“-Look** und eine **fl�
 
 Ein Skit schaltet den Look mit `useCuteLook();` am Dateianfang ein.
 
-Format: 1080×1920, 30 fps, H.264 + AAC-Stereo. Der Ton besteht aus durchgehender Musik und Soundeffekten,
+Format: 1080×1920, 30 fps (01–05) bzw. 60 fps (06–10), H.264 + AAC-Stereo. Der Ton besteht aus durchgehender Musik und Soundeffekten,
 beides komplett synthetisch erzeugt, es gibt also keine fremden Samples und keine Musiklizenzen. Die Bären haben keine Stimmen,
 die Dialoge stehen als Sprechblasen im Bild.
 
@@ -69,9 +74,11 @@ So funktioniert es:
   `S.sfx(t, name)` und `S.music(t0, t1, mood)`.
   Moods: normal, sweet, angry, shout, sleepy, sad, excited.
   Musik: cozy, night, romantic, silly, sneaky, chaos, glam, tense, sad, lofi, dreamy, bouncy.
-- `draw(ctx, t, S)`: Kamera, Set (`drawBedroomBack`, `drawKitchen`, `drawLivingRoom`, `drawVanity`, neu: `drawCozyBedroom`, `drawCozyRoom`, `drawCozyKitchen`) und die
+- `draw(ctx, t, S)`: Kamera, Set (`drawBedroomBack`, `drawKitchen`, `drawLivingRoom`, `drawVanity`, neu: `drawCozyBedroom`, `drawCozyRoom`, `drawCozyKitchen`, `drawCozyBathroom`) und die
   Bären über `bearState('him'|'her', {...})`.
   Ausdrücke: `eyes` (dot, happy, sleep, shock, heart, sparkle, teary, spiral, x, line), `mouth` (w, smile, grin, frown, flat, o,
   bigO, yawn, wobbly, smirk, pout, teeth, tongue, chew), dazu `brows`, `lid`, `anger`, `sweat`, `tears`, `steam`, `redFace`, `frost`, `melt` …
+  Neu für den cute-Look: `wet` (nasses Fell), `puff` (Fellball), `foam` (Shampoo-Schaum), `turban` (Handtuch), `iceBlock`,
+  `redNose` und weich einblendende Greif-Arme über `reachL`/`reachR` + `reachLw`/`reachRw` (0 = normale Pose, 1 = am Ziel).
 - Gesichter und Figuren stecken in `render/engine/bear.js`, Sets und Requisiten in `props.js`,
   Text, Sprechblasen und Effekte in `fx.js`.

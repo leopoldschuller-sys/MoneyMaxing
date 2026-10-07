@@ -101,6 +101,17 @@ class Actor {
         o.x += 4 * amp * Math.sin(d * 55) * bump(d, 1.2);
       } else if (kind === 'lean') {
         o.lean += 0.06 * amp * bump(d, 0.8);
+      } else if (kind === 'dogshake') {
+        // shaking off water like a wet dog
+        const e = bump(d, 0.85);
+        o.lean += 0.13 * amp * Math.sin(d * 42) * e;
+        o.headTilt += 0.24 * amp * Math.sin(d * 42 + 0.9) * e;
+        o.x += 10 * amp * Math.sin(d * 42) * e;
+        o.squash *= 1 - 0.05 * amp * e;
+      } else if (kind === 'shiver2') {
+        // strong freezing shiver
+        o.x += 6 * amp * Math.sin(d * 70) * bump(d, 1.6);
+        o.squash *= 1 - 0.03 * amp * bump(d, 1.6);
       }
     }
     return o;

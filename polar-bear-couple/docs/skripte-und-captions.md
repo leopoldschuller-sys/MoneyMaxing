@@ -1,12 +1,12 @@
-# Skripte, Captions & Hashtags – 8 Eisbär-Couple-Videos
+# Skripte, Captions & Hashtags – 10 Eisbär-Couple-Videos
 
-Alle Videos sind **1080×1920 (9:16), 30 fps, H.264 + AAC**, Länge 27–30 s.
+Alle Videos sind **1080×1920 (9:16), H.264 + AAC**, Länge 25–31 s (01–05 mit 30 fps, 06–10 mit 60 fps).
 Die Hook-Zeile steht ab Frame 0 oben im Bild, damit sie auch als Thumbnail funktioniert.
 On-Screen-Text ist Englisch (globales/US-Publikum). Die Bären haben keine Stimmen, die Dialoge stehen als
 Sprechblasen im Bild, der Ton besteht aus Musik und Soundeffekten. Dadurch funktionieren die Clips in jedem Land,
 und du kannst problemlos einen Trend-Sound darunterlegen.
 
-Die Figuren sind in allen 5 Videos identisch:
+Die Figuren sind in allen Videos identisch:
 - **Er:** etwas größer, kleiner Fell-Tupfer oben auf dem Kopf, ruhig und verpennt, liebt Fisch.
 - **Sie:** etwas kleiner, rosa Schleife, Wimpern, rosige Wangen, dramatisch und „angry but cute“.
 
@@ -147,9 +147,53 @@ Die Figuren sind in allen 5 Videos identisch:
 
 ---
 
-## Posting-Tipps für diese 5 Clips
+## 9) `09_shower_him_vs_her.mp4` – „him vs her: taking a shower 🚿“ (31 s, im Badezimmer)
+
+Fast ohne Text: nur HIM / HER / US, zwei Zeit-Chips und ein Schlusssatz. Der Witz läuft komplett über das Bild.
+
+| Zeit | Beat |
+|---|---|
+| 0–2 s | HIM steht in der rosa Wanne und dreht den Regler auf ❄️: eiskaltes Wasser mit Schneeflocken, er seufzt glücklich |
+| 2–5 s | Eine einzige Flasche „10 in 1“ über den Kopf, Schaum, kurz schrubben, Flasche zurück aufs Regal werfen, abspülen |
+| 5–7 s | ⏱️ 2 min. Nass und dünn, schüttelt sich wie ein Hund trocken → POOF: flauschiger Fellball ✨ |
+| 7–10 s | Vorhang zu, Vorhang auf: HER dreht den Regler über das Maximum hinaus 🔥, Lava-Wasser, glücklicher Hüftschwung |
+| 10–12 s | 13 Flaschen ploppen nacheinander ins Regal, seine „10 in 1“ fliegt dabei in die Wanne |
+| 12–15 s | Dusch-Konzert mit der Shampooflasche als Mikro 🎶. Zeitraffer: Uhr rast, ⏱️ zählt hoch, der Dampf schluckt das ganze Bad, nur ihre Schleife ist noch zu sehen |
+| 15–20 s | Der Dampf lichtet sich: Handtuch-Turban, rosige Wangen, Herz im beschlagenen Spiegel, ⏱️ 1 h 47 min |
+| 20–23 s | US: zusammen in der Wanne. Sie dreht auf heiß, er wird knallrot, Dampf aus den Ohren, er schmilzt 🥵 |
+| 23–26 s | Sein Arm schleicht sich über ihren Kopf zum Regler → eiskalt: Sie friert im Eisblock ein 🥶, das Eis zerspringt, Regler-Krieg |
+| 26–31 s | Sie macht Hundeaugen 🥺, er seufzt, dreht selbst auf heiß und schmilzt mit Herzaugen zur Pfütze, sie umarmt ihn: **the things I do for her 🫠** |
+
+**Caption:** `him: 2 minutes, 1 bottle. her: 1h 47min and the bathroom is a sauna 🚿🔥 who showers longer in your relationship?`
+**Hashtags:** `#himvsher #couplehumor #showerroutine #polarbear #polaropposites`
+
+---
+
+## 10) `10_sick_him_vs_her.mp4` – „him vs her: being sick 🤒“ (25 s, auf der Couch)
+
+Das „Männergrippe“-Klischee. Text nur als Temperatur-Chips, eine Google-Suche, eine Sprechblase und der Schlusssatz.
+
+| Zeit | Beat |
+|---|---|
+| 0–2 s | HIM im Decken-Burrito auf der Couch: Kühlpack, rote Nase, Taschentuch-Berg. Thermometer piept: 🌡️ 37.1 °C, Schock, Tränen |
+| 2–5 s | Er klingelt mit einem Glöckchen 🔔, sie eilt mit Suppe herbei und füttert ihn |
+| 5–7 s | Er googelt „is 37.1° fatal?“, sie schaut genervt |
+| 7–9 s | Er „stirbt“ dramatisch (x-Augen, Zunge raus), seine Seele schwebt mit Heiligenschein davon 😇 |
+| 9–11 s | Sie packt die Seele am Schwänzchen, stopft sie zurück und tätschelt ihm den Kopf, er strahlt |
+| 11–15 s | HER, 🌡️ 39.4 °C: saugt mit Thermometer im Mund Staub, niest kräftig und saugt einfach weiter |
+| 15–18 s | Arbeitet am Laptop (Benachrichtigungen ploppen), daneben die gefaltete Wäsche, er schläft mit Rotzblase. Er wacht auf und schaut besorgt: „I'm fine 🙂“ |
+| 18–21 s | Er bringt ihr stolz „Suppe“ auf Eisbär-Art: ein Lachs in Eiswasser 🐟🧊. Sie schaut ihn an … und lacht los ❤️ |
+| 21–25 s | Puff! Beide zusammen in einem Decken-Burrito, Kopf an Kopf: **he tried 🥹** |
+
+**Caption:** `37.1° and he's googling if it's fatal. 39.4° and she's vacuuming 😭🤒 who's the dramatic one when sick?`
+**Hashtags:** `#manflu #himvsher #couplehumor #polarbear #polaropposites`
+
+---
+
+## Posting-Tipps
 
 - **Reihenfolge:** 2 → 1 → 3 → 5 → 4. Video 2 hat den stärksten Twist („WHO IS SALMON“) und eignet sich als Einstieg in die Serie.
+- **Die neuen Klischee-Clips 09 und 10** sind fast textfrei und funktionieren dadurch auch ohne Englischkenntnisse. „him vs her“ ist das bekannteste Format der Nische, deshalb eignen sich beide gut als Einstieg oder für einen zweiten Account in einer anderen Sprache.
 - **Ton:** Die Clips haben eigene, lizenzfreie Musik und Soundeffekte (synthetisch erzeugt, siehe `render/audio.py`), aber keine Stimmen. Für mehr Reichweite kannst du in der App zusätzlich einen Trend-Sound darunterlegen. Für bezahlte Kooperationen nur die Commercial Music Library nutzen.
 - **KI-Label:** Pflicht ist das Label laut Recherche vor allem bei *realistisch wirkendem* KI-Content. Die Cartoon-Clips sind offensichtlich animiert, aber mit KI-Hilfe entstanden. Im Zweifel das Label setzen, laut TikTok kostet es keine Reichweite. Für die realistischen KI-Versionen aus `ki-prompts.md` das Label **immer** setzen.
 - **Zeiten (aus Deutschland für US-Publikum):** Di–Do 20:00–24:00 Uhr deutscher Zeit, So 15:00 Uhr. Vom 25. 10. bis 1. 11. 2026 ist der Abstand nur 5 statt 6 Stunden.
